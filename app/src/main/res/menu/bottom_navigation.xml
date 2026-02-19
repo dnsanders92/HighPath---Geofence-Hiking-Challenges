@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/explore"
+        android:title="Explore"
+        android:icon="@drawable/icon_map" />
+
+    <item
+        android:id="@+id/activities"
+        android:title="Activities"
+        android:icon="@drawable/icon_hiking" />
+
+    <item
+        android:id="@+id/track"
+        android:title="Track"
+        android:icon="@drawable/icon_track" />
+
+    <item
+        android:id="@+id/challenges"
+        android:title="Challenges"
+        android:icon="@drawable/icon_trophy" />
+
+    <item
+        android:id="@+id/profile"
+        android:title="Profile"
+        android:icon="@drawable/icon_profile" />
+
+</menu>
