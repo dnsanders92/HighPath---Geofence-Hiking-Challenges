@@ -3,6 +3,19 @@
     <style name="Base.Theme.HighPath" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+        <!-- Remove Material3 purple highlight on BottomNavigationView -->
+        <item name="colorSecondaryContainer">@android:color/transparent</item>
+        <item name="colorOnSecondaryContainer">@android:color/black</item>
+
+        <!-- Remove purple ripple effect -->
+        <item name="rippleColor">@android:color/transparent</item>
+
+    </style>
+
+    <style name="CircleImageStyle">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
     </style>
 
     <style name="Theme.HighPath" parent="Base.Theme.HighPath" />

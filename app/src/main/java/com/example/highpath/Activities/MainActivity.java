@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Checks if user table is empty. Local db will only ever have one user.
         CheckUserState.checkUser(this);
 
         BottomNavigationView navBar = findViewById(R.id.bottom_navigation);
