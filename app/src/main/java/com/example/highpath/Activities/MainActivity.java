@@ -9,11 +9,14 @@ import androidx.fragment.app.FragmentManager;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.View;
 
 import com.example.androidhikingapplication.Services.LocationService;
 import com.example.highpath.Database.DatabaseServices.CheckUserState;
+import com.example.highpath.Fragments.OtherFragments.SplashScreenFragment;
 import com.example.highpath.Navigation.NavigationControl;
 import com.example.highpath.R;
+import com.example.highpath.Utilities.StorageManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,16 +30,28 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Initialises system folders on first launch.
+        StorageManager.initialiseFolders(this);
+
         // Checks if user table is empty. Local db will only ever have one user.
         CheckUserState.checkUser(this);
 
         BottomNavigationView navBar = findViewById(R.id.bottom_navigation);
+        navBar.setVisibility(View.GONE);
+
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         new NavigationControl(fragmentManager, navBar);
 
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container, new SplashScreenFragment())
+                .commit();
+
+
         locationService = new LocationService(this);
         checkAndRequestPermissions();
+
     }
 
     private void checkAndRequestPermissions() {

@@ -3,6 +3,7 @@ package com.example.highpath.MapBox;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mapbox.geojson.Point;
 import com.mapbox.maps.CameraOptions;
@@ -13,11 +14,17 @@ import com.mapbox.maps.plugin.locationcomponent.LocationComponentUtils;
 
 public class LoadMapBox {
 
+    private boolean hasCenteredOnce = false;
+
     public LoadMapBox() {
         // Explicit empty constructor
     }
 
-    public void initializeMap(@NonNull Context context, @NonNull final MapView mapView, boolean enablePuck) {
+    public void initializeMap(@NonNull Context context,
+                              @NonNull final MapView mapView,
+                              final boolean enablePuck,
+                              @Nullable final Double centerLat,
+                              @Nullable final Double centerLon) {
 
         mapView.getMapboxMap().loadStyleUri(
                 Style.MAPBOX_STREETS,
@@ -25,15 +32,12 @@ public class LoadMapBox {
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
 
-                        // Default camera position (example: Dublin)
-                        mapView.getMapboxMap().setCamera(
-                                new CameraOptions.Builder()
-                                        .center(Point.fromLngLat(-6.2603, 53.3498))
-                                        .zoom(12.0)
-                                        .build()
-                        );
+                        if (!hasCenteredOnce) {
+                            centreMap(mapView, centerLat, centerLon);
+                            hasCenteredOnce = true;
+                        }
 
-                        // enable puck now that the style is loaded
+                        // Enables location puck if true.
                         if (enablePuck) {
                             enableLocationPuck(mapView);
                         }
@@ -42,7 +46,21 @@ public class LoadMapBox {
         );
     }
 
-    /** Call-safe helper that enables the Mapbox location puck for the provided MapView. */
+    public void centreMap(MapView mapView, Double centerLat, Double centerLon) {
+
+        if (centerLat != null && centerLon != null) {
+            Point centerPoint = Point.fromLngLat(centerLon, centerLat);
+
+            mapView.getMapboxMap().setCamera(
+                    new CameraOptions.Builder()
+                            .center(centerPoint)
+                            .zoom(12.0)
+                            .build()
+            );
+        }
+    }
+
+
     public void enableLocationPuck(@NonNull MapView mapView) {
         LocationComponentPlugin locationComponentPlugin = LocationComponentUtils.getLocationComponent(mapView);
         locationComponentPlugin.setEnabled(true);
