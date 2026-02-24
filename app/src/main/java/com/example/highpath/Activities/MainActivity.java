@@ -11,11 +11,11 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 
-import com.example.androidhikingapplication.Services.LocationService;
 import com.example.highpath.Database.DatabaseServices.CheckUserState;
 import com.example.highpath.Fragments.OtherFragments.SplashScreenFragment;
 import com.example.highpath.Navigation.NavigationControl;
 import com.example.highpath.R;
+import com.example.highpath.Services.LocationService;
 import com.example.highpath.Utilities.StorageManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 

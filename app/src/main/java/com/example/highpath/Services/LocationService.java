@@ -1,4 +1,4 @@
-package com.example.androidhikingapplication.Services;
+package com.example.highpath.Services;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
