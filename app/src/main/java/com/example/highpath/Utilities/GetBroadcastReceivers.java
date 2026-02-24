@@ -44,8 +44,7 @@ public class GetBroadcastReceivers {
         return new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                // Note: These keys must be included in your RecordingService's
-                // RECORDING_METRICS_UPDATE broadcast intent.
+
                 int elapsedTime = intent.getIntExtra("time", 0);
                 double distance = intent.getDoubleExtra("distance", 0.0);
 
