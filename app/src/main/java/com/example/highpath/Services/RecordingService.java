@@ -17,14 +17,23 @@ import androidx.core.app.NotificationCompat;
 import com.example.highpath.Calculations.CalculateDistance;
 import com.example.highpath.Calculations.CalculateElevation;
 import com.example.highpath.R;
+import com.example.highpath.Runnables.GpxRunnable;
+import com.example.highpath.Runnables.TimeRunnable;
+import com.example.highpath.Utilities.GPX.GpxFileName;
+import com.example.highpath.Utilities.GPX.GPXBuilder;
+import com.example.highpath.Utilities.StorageManager;
 
 public class RecordingService extends Service {
 
-    public static final String ACTION_TIME_TICK = "com.example.highpath.TIME_TICK";
+    private String fileName, filePath;
+
+
     public static final String ACTION_METRICS_UPDATE = "com.example.highpath.RECORDING_METRICS_UPDATE";
     private static final String CHANNEL_ID = "RecordingChannel";
 
     private LocationService locationService;
+    private GPXBuilder gpxBuilder;
+
     private int time = 0;
     private double totalDistance = 0, totalElevation = 0;
     private double prevLat = 0.0, prevLon = 0.0, prevEle = 0.0;
@@ -33,18 +42,8 @@ public class RecordingService extends Service {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private boolean isRecordingActive = false;
 
-    private final Runnable countSeconds = new Runnable() {
-        @Override
-        public void run() {
-            if (isRecordingActive) {
-                time += 1;
-                Intent intent = new Intent(ACTION_TIME_TICK);
-                intent.putExtra("time", time);
-                sendBroadcast(intent);
-            }
-            handler.postDelayed(this, 1000);
-        }
-    };
+    private GpxRunnable gpxRunnable;
+    private TimeRunnable timeRunnable;
 
     private final Runnable metricRunnable = new Runnable() {
         @Override
@@ -70,7 +69,7 @@ public class RecordingService extends Service {
                     Intent intent = new Intent(ACTION_METRICS_UPDATE);
                     intent.putExtra("distance", totalDistance);
                     intent.putExtra("elevation", totalElevation);
-                    intent.putExtra("time", time); // Added for Pace Receiver
+                    intent.putExtra("time", time);
                     intent.setPackage(getPackageName());
                     sendBroadcast(intent);
                 }
@@ -82,15 +81,48 @@ public class RecordingService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
         createNotificationChannel();
+
+        // Generate filename
+        GpxFileName gpxFileName = new GpxFileName(this);
+        fileName = gpxFileName.generate();
+
+        // Resolve GPX path
+        filePath = StorageManager.getGpxPath(this);
+
+        // Start location updates
         locationService = new LocationService(this);
         locationService.startLocationUpdates();
-        handler.post(countSeconds);
+
+        // Create GPX builder
+        gpxBuilder = new GPXBuilder();
+
+        try {
+            gpxBuilder.gpxHeader(filePath, fileName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        // Create and start GPX runnable
+        gpxRunnable = new GpxRunnable(
+                locationService,
+                gpxBuilder,
+                filePath,
+                fileName
+        );
+
+        handler.post(gpxRunnable);
+
+        timeRunnable = new TimeRunnable(this);
+        handler.post(timeRunnable);
+
         handler.post(metricRunnable);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Hike Recording")
                 .setContentText("Actively tracking your progress…")
@@ -101,11 +133,13 @@ public class RecordingService extends Service {
         startForeground(1, notification);
 
         if (intent != null && intent.getAction() != null) {
-            String action = intent.getAction();
-            if (action.equals("START_OR_RESUME")) {
-                isRecordingActive = true;
-            } else if (action.equals("PAUSE")) {
-                isRecordingActive = false;
+            switch (intent.getAction()) {
+                case "START_OR_RESUME":
+                    isRecordingActive = true;
+                    break;
+                case "PAUSE":
+                    isRecordingActive = false;
+                    break;
             }
         } else {
             isRecordingActive = true;
@@ -116,9 +150,13 @@ public class RecordingService extends Service {
 
     @Override
     public void onDestroy() {
-        handler.removeCallbacks(countSeconds);
+        handler.removeCallbacks(timeRunnable);
         handler.removeCallbacks(metricRunnable);
-        if (locationService != null) locationService.stopLocationUpdates();
+        handler.removeCallbacks(gpxRunnable);
+
+        if (locationService != null)
+            locationService.stopLocationUpdates();
+
         super.onDestroy();
     }
 

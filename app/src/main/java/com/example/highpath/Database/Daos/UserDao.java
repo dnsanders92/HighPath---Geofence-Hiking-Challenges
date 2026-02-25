@@ -24,4 +24,7 @@ public interface UserDao {
     @Query("SELECT * FROM user LIMIT 1")
     UserEntity getUser();
 
+    @Query("SELECT user_id FROM user LIMIT 1")
+    int getUserId();
+
 }

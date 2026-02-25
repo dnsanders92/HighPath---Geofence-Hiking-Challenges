@@ -1,5 +1,6 @@
 package com.example.highpath.Fragments.OtherFragments;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
@@ -90,6 +91,7 @@ public class RecordingPanelFragment extends Fragment {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void resetUI() {
         btnStart.setText("Start");
         timeLabel.setText("00:00:00");
