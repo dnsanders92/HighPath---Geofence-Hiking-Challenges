@@ -1,29 +1,31 @@
 package com.example.highpath.Utilities.GPX;
 
-
 import android.annotation.SuppressLint;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class GPXBuilder {
+public class GpxBuilder {
 
-    public void fileCreator(String filePath, String fileName) throws Exception {
-        File gpxFile = new File(filePath, fileName);
-        gpxFile.createNewFile();
+    private final String filePath;
+    private final String fileName;
+
+    // Constructor stores the path and name for all methods to use
+    public GpxBuilder(String filePath, String fileName) {
+        this.filePath = filePath;
+        this.fileName = fileName;
     }
 
-    public void gpxHeader(String filePath,String fileName) throws Exception {
-
-        fileCreator(filePath, fileName);
-
+    private void fileCreator() throws IOException {
         File gpxFile = new File(filePath, fileName);
+        if (!gpxFile.exists()) {
+            gpxFile.createNewFile();
+        }
+    }
 
+    public void gpxHeader() throws Exception {
+        fileCreator();
+        File gpxFile = new File(filePath, fileName);
         FileWriter writer = new FileWriter(gpxFile, true);
 
         writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -41,10 +43,8 @@ public class GPXBuilder {
     }
 
     @SuppressLint("DefaultLocale")
-    public void trackPoint(double lat, double lon, double ele, String fileName, String filePath) throws IOException {
-
+    public void trackPoint(double lat, double lon, double ele) throws IOException {
         File gpxFile = new File(filePath, fileName);
-
         FileWriter writer = new FileWriter(gpxFile, true);
 
         writer.write(String.format("\n      <trkpt lat=\"%f\" lon=\"%f\">\n", lat, lon));
@@ -54,10 +54,8 @@ public class GPXBuilder {
         writer.close();
     }
 
-    public String gpxFooter(String filePath, String fileName) throws IOException {
-
+    public String gpxFooter() throws IOException {
         File gpxFile = new File(filePath, fileName);
-
         FileWriter writer = new FileWriter(gpxFile, true);
 
         writer.write("\n    </trkseg>");
@@ -65,7 +63,6 @@ public class GPXBuilder {
         writer.write("\n</gpx>");
 
         writer.close();
-
         return gpxFile.getAbsolutePath();
     }
 }

@@ -1,25 +1,30 @@
 package com.example.highpath.Utilities.GPX;
 
 import android.content.Context;
-
-import com.example.highpath.Database.Daos.UserDao;
+import android.os.Handler;
+import android.os.Looper;
 import com.example.highpath.Database.LocalDatabase;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class GpxFileName {
 
-    private final UserDao userDao;
-
-    public GpxFileName(Context context) {
-        LocalDatabase db = LocalDatabase.getInstance(context.getApplicationContext());
-        this.userDao = db.userDao();
+    public interface GpxNameCallback {
+        void onNameGenerated(String fileName);
     }
 
-    public String generate() {
-        int userId = userDao.getUserId();
+    public static void generateAsync(Context context, GpxNameCallback callback) {
+        Handler mainHandler = new Handler(Looper.getMainLooper());
 
-        String timestamp = java.time.LocalDateTime.now()
-                .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        new Thread(() -> {
 
-        return userId + "_" + timestamp + ".gpx";
+            int userId = LocalDatabase.getInstance(context).userDao().getUserId();
+
+            String timestamp = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String finalName = userId + "_" + timestamp + ".gpx";
+
+            mainHandler.post(() -> callback.onNameGenerated(finalName));
+        }).start();
     }
 }

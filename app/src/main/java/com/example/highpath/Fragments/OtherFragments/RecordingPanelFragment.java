@@ -1,32 +1,23 @@
 package com.example.highpath.Fragments.OtherFragments;
 
-import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.IntentFilter;
-import android.os.Build;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
-import com.example.highpath.R;
 import com.example.highpath.Services.RecordingService;
-import com.example.highpath.Utilities.GetBroadcastReceivers;
+import com.example.highpath.R;
+import com.example.highpath.Utilities.StorageManager;
+import com.example.highpath.Utilities.GPX.GpxFileName;
 
 public class RecordingPanelFragment extends Fragment {
 
     private Button btnStart, btnStop;
-    private TextView distanceLabel, elevationLabel, paceLabel, timeLabel;
-
-    private BroadcastReceiver metricsReceiver;
-    private BroadcastReceiver paceReceiver;
-    private BroadcastReceiver timeReceiver;
+    private String filePath, fileName;
 
     public RecordingPanelFragment() {
         super(R.layout.fragment_recording_panel);
@@ -39,18 +30,36 @@ public class RecordingPanelFragment extends Fragment {
         btnStart = view.findViewById(R.id.btnStart);
         btnStop = view.findViewById(R.id.btnStop);
 
-        distanceLabel = view.findViewById(R.id.labelDistance);
-        elevationLabel = view.findViewById(R.id.labelElevationGain);
-        paceLabel = view.findViewById(R.id.labelPace);
-        timeLabel = view.findViewById(R.id.labelTime);
-
+        enableStartButton();
         disableStopButton();
 
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String state = btnStart.getText().toString();
-                handleStartButtonClick(state);
+                // 1. Get the directory path immediately
+                filePath = StorageManager.getGpxPath(requireContext());
+
+                // 2. Request the name (Database work happens in background)
+                GpxFileName.generateAsync(requireContext(), new GpxFileName.GpxNameCallback() {
+                    @Override
+                    public void onNameGenerated(String generatedName) {
+                        fileName = generatedName;
+
+                        // 3. Logic only proceeds once the name is ready
+                        disableStartButton();
+                        enableStopButton();
+
+                        // Start Service
+                        RecordingService.start(requireContext(), filePath, fileName);
+
+                        // Show confirmation
+                        new AlertDialog.Builder(requireContext())
+                                .setTitle("Recording Started")
+                                .setMessage("File: " + fileName + "\nLocation: " + filePath)
+                                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                                .show();
+                    }
+                });
             }
         });
 
@@ -61,44 +70,24 @@ public class RecordingPanelFragment extends Fragment {
                         .setTitle("Stop Recording")
                         .setMessage("Confirm YES to stop recording")
                         .setPositiveButton("Yes, Stop", (dialog, which) -> {
+                            disableStopButton();
+                            enableStartButton();
                             RecordingService.stop(requireContext());
-                            resetUI();
                         })
                         .setNegativeButton("No, Continue", (dialog, which) -> dialog.dismiss())
                         .show();
             }
         });
-
-        // Initialize receivers
-        metricsReceiver = GetBroadcastReceivers.getMetricsReceiver(distanceLabel, elevationLabel);
-        paceReceiver = GetBroadcastReceivers.getPaceReceiver(paceLabel);
-        timeReceiver = GetBroadcastReceivers.getTimeReceiver(timeLabel);
     }
 
-    private void handleStartButtonClick(String state) {
-        switch (state) {
-            case "Start":
-            case "Resume":
-                RecordingService.startOrResume(requireContext());
-                btnStart.setText("Pause");
-                disableStopButton();
-                break;
-            case "Pause":
-                RecordingService.pause(requireContext());
-                btnStart.setText("Resume");
-                enableStopButton();
-                break;
-        }
+    private void disableStartButton() {
+        btnStart.setEnabled(false);
+        btnStart.setAlpha(0.5f);
     }
 
-    @SuppressLint("SetTextI18n")
-    private void resetUI() {
-        btnStart.setText("Start");
-        timeLabel.setText("00:00:00");
-        distanceLabel.setText("0.00 km");
-        elevationLabel.setText("0 m");
-        paceLabel.setText("0.0");
-        disableStopButton();
+    private void enableStartButton() {
+        btnStart.setEnabled(true);
+        btnStart.setAlpha(1.0f);
     }
 
     private void disableStopButton() {
@@ -109,35 +98,5 @@ public class RecordingPanelFragment extends Fragment {
     private void enableStopButton() {
         btnStop.setEnabled(true);
         btnStop.setAlpha(1.0f);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        IntentFilter timeFilter = new IntentFilter(RecordingService.ACTION_TIME_TICK);
-        IntentFilter metricsFilter = new IntentFilter(RecordingService.ACTION_METRICS_UPDATE);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requireActivity().registerReceiver(timeReceiver, timeFilter, Context.RECEIVER_EXPORTED);
-            requireActivity().registerReceiver(metricsReceiver, metricsFilter, Context.RECEIVER_EXPORTED);
-            requireActivity().registerReceiver(paceReceiver, metricsFilter, Context.RECEIVER_EXPORTED);
-        } else {
-            requireActivity().registerReceiver(timeReceiver, timeFilter);
-            requireActivity().registerReceiver(metricsReceiver, metricsFilter);
-            requireActivity().registerReceiver(paceReceiver, metricsFilter);
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        try {
-            requireActivity().unregisterReceiver(timeReceiver);
-            requireActivity().unregisterReceiver(metricsReceiver);
-            requireActivity().unregisterReceiver(paceReceiver);
-        } catch (IllegalArgumentException e) {
-            // Safe catch
-        }
     }
 }

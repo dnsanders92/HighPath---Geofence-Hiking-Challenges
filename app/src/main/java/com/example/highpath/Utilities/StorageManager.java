@@ -7,15 +7,15 @@ import java.io.File;
 
 public class StorageManager {
 
-    private static final String TAG = "StrideStorage";
-    private static final String PARENT_DIRECTORY = "strideUser";
+    private static final String TAG = "HighPathStorage";
+    private static final String PARENT_DIRECTORY = "HighPathUser";
 
-    public static final String GPX_FOLDER = "rawGPX";
+    public static final String GPX_FILES = "gpxFiles";
     public static final String USER_IMAGES = "userImages";
 
     public static void initialiseFolders(Context context) {
         File internalFilesDirectory = context.getFilesDir();
-        String[] subFolders = {GPX_FOLDER, USER_IMAGES};
+        String[] subFolders = {GPX_FILES, USER_IMAGES};
 
         for (String folderName : subFolders) {
             File folder = new File(internalFilesDirectory, PARENT_DIRECTORY + File.separator + folderName);
@@ -33,7 +33,7 @@ public class StorageManager {
     }
 
     public static String getGpxPath(Context context) {
-        return getFolder(context, GPX_FOLDER).getAbsolutePath();
+        return getFolder(context, GPX_FILES).getAbsolutePath();
     }
 
 }

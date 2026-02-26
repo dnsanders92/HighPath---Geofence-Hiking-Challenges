@@ -1,48 +1,41 @@
 package com.example.highpath.Runnables;
 
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-
 import com.example.highpath.Services.LocationService;
-import com.example.highpath.Utilities.GPX.GPXBuilder;
+import com.example.highpath.Utilities.GPX.GpxBuilder;
 
 public class GpxRunnable implements Runnable {
 
-    private final String filePath;
-    private final String fileName;
-
     private final LocationService locationService;
-    private final GPXBuilder gpxBuilder;
+    private final GpxBuilder gpxBuilder;
+    private final Handler handler;
 
-    private final Handler handler = new Handler(Looper.getMainLooper());
-
-    public GpxRunnable(LocationService locationService,
-                       GPXBuilder gpxBuilder,
-                       String filePath,
-                       String fileName) {
-
+    // The Constructor: This is how the Service "hands over" the tools
+    public GpxRunnable(Handler handler, LocationService locationService, GpxBuilder gpxBuilder) {
+        this.handler = handler;
         this.locationService = locationService;
         this.gpxBuilder = gpxBuilder;
-        this.filePath = filePath;
-        this.fileName = fileName;
     }
 
     @Override
     public void run() {
+        // Pull location from the helper
         double lat = locationService.getLatitude();
         double lon = locationService.getLongitude();
         double ele = locationService.getElevation();
 
         if (lat != 0.0 && lon != 0.0) {
             try {
-                // FIXED: Correct parameter order
-                gpxBuilder.trackPoint(lat, lon, ele, fileName, filePath);
+                // Tell the builder to write the point
+                gpxBuilder.trackPoint(lat, lon, ele);
+                Log.d("GpxRunnable", "Point Saved: " + lat + ", " + lon);
             } catch (Exception e) {
-                Log.e("GPX", "GPX Write Error: " + e.getMessage());
+                Log.e("GpxRunnable", "Write error: " + e.getMessage());
             }
         }
 
+        // Keep the loop going every 2 seconds
         handler.postDelayed(this, 2000);
     }
 }
