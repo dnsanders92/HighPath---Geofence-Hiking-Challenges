@@ -7,15 +7,18 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.os.Handler; // Added
+import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;  // Added
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-import com.example.highpath.Runnables.GpxRunnable; // Added
+import com.example.highpath.Runnables.GpxRunnable;
+import com.example.highpath.Runnables.PaceRunnable;
+import com.example.highpath.Runnables.TimeRunnable;
+import com.example.highpath.Runnables.MetricsRunnable;
 import com.example.highpath.Utilities.GPX.GpxBuilder;
 
 import java.io.IOException;
@@ -25,17 +28,24 @@ public class RecordingService extends Service {
     private static final String TAG = "RecordingService";
     private static final String CHANNEL_ID = "record_channel";
 
+    // Broadcast Action
+    public static final String ACTION_RECORDING_STATUS = "com.example.highpath.RECORDING_STATUS";
+
+    // Static flag for instant checking
+    public static boolean isRecording = false;
+
     private static final String EXTRA_FILE_PATH = "extra_file_path";
     private static final String EXTRA_FILE_NAME = "extra_file_name";
 
     private String filePath, fileName;
     private GpxBuilder gpxBuilder;
 
-    // --- Added for Encapsulation ---
     private LocationService locationService;
     private GpxRunnable gpxRunnable;
+    private TimeRunnable timeRunnable;
+    private MetricsRunnable metricsRunnable;
+    private PaceRunnable paceRunnable;
     private final Handler handler = new Handler(Looper.getMainLooper());
-    // -------------------------------
 
     public static void start(Context context, String filePath, String fileName) {
         Intent intent = new Intent(context, RecordingService.class);
@@ -71,58 +81,67 @@ public class RecordingService extends Service {
 
                 try {
                     gpxBuilder.gpxHeader();
-                    Log.d(TAG, "GPX Header written successfully.");
 
-                    // --- IMPLEMENTATION START ---
-                    // 1. Initialize GPS helper
                     locationService = new LocationService(this);
                     locationService.startLocationUpdates();
 
-                    // 2. Initialize the encapsulated Runnable
                     gpxRunnable = new GpxRunnable(handler, locationService, gpxBuilder);
+                    timeRunnable = new TimeRunnable(this, handler);
+                    metricsRunnable = new MetricsRunnable(this, handler, locationService);
+                    paceRunnable = new PaceRunnable(this, handler, timeRunnable, metricsRunnable);
 
-                    // 3. Kick off the 2-second loop
                     handler.post(gpxRunnable);
-                    // --- IMPLEMENTATION END ---
+                    handler.post(timeRunnable);
+                    handler.post(metricsRunnable);
+                    handler.post(paceRunnable);
+
+                    // Update status and broadcast
+                    isRecording = true;
+                    sendStatusBroadcast(true);
 
                 } catch (Exception e) {
-                    Log.e(TAG, "Error initializing GPX header", e);
+                    Log.e(TAG, "Error initializing Service", e);
                 }
             }
         }
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Recording Route")
-                .setContentText("Saving to: " + fileName)
-                .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+                .setContentText("Tracking metrics...")
+                .setSmallIcon(android.R.drawable.ic_menu_mylocation)
                 .setOngoing(true)
                 .build();
 
         startForeground(1, notification);
-
         return START_NOT_STICKY;
+    }
+
+    private void sendStatusBroadcast(boolean status) {
+        Intent intent = new Intent(ACTION_RECORDING_STATUS);
+        intent.putExtra("isRecording", status);
+        intent.setPackage(getPackageName());
+        sendBroadcast(intent);
     }
 
     @Override
     public void onDestroy() {
-        // --- Added Cleanup ---
-        // 1. Stop the loop timer immediately
-        if (handler != null && gpxRunnable != null) {
-            handler.removeCallbacks(gpxRunnable);
+        isRecording = false;
+        sendStatusBroadcast(false);
+
+        if (handler != null) {
+            if (gpxRunnable != null) handler.removeCallbacks(gpxRunnable);
+            if (timeRunnable != null) handler.removeCallbacks(timeRunnable);
+            if (metricsRunnable != null) handler.removeCallbacks(metricsRunnable);
+            if (paceRunnable != null) handler.removeCallbacks(paceRunnable);
         }
 
-        // 2. Stop the GPS hardware to save battery
-        if (locationService != null) {
-            locationService.stopLocationUpdates();
-        }
+        if (locationService != null) locationService.stopLocationUpdates();
 
-        // 3. Existing Footer Logic
         if (gpxBuilder != null) {
             try {
                 gpxBuilder.gpxFooter();
-                Log.d(TAG, "GPX Footer written. File closed.");
             } catch (IOException e) {
-                Log.e(TAG, "Error writing GPX footer", e);
+                Log.e(TAG, "Error closing GPX", e);
             }
         }
         super.onDestroy();
@@ -137,7 +156,7 @@ public class RecordingService extends Service {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID, "Recording Service", NotificationManager.IMPORTANCE_LOW);
             NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) { manager.createNotificationChannel(channel); }
+            if (manager != null) manager.createNotificationChannel(channel);
         }
     }
 }

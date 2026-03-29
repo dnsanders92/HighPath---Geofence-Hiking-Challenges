@@ -3,29 +3,38 @@ package com.example.highpath.Runnables;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-import android.os.Looper;
 
 public class TimeRunnable implements Runnable {
 
     public static final String ACTION_TIME_TICK = "com.example.highpath.TIME_TICK";
 
     private final Context context;
-    private final Handler handler = new Handler(Looper.getMainLooper());
-    private int time = 0;
+    private final Handler handler;
+    public int time = 0;
 
-    public TimeRunnable(Context context) {
+    public int getTime() {
+        return time;
+    }
+
+    public void setTime(int time) {
+        this.time = time;
+    }
+
+    public TimeRunnable(Context context, Handler handler) {
         this.context = context;
+        this.handler = handler;
     }
 
     @Override
     public void run() {
-
         time++;
-
         Intent intent = new Intent(ACTION_TIME_TICK);
         intent.putExtra("time", time);
-        context.sendBroadcast(intent);
 
+        // Explicitly set the package name to ensure it delivers to your app's receivers
+        intent.setPackage(context.getPackageName());
+
+        context.sendBroadcast(intent);
         handler.postDelayed(this, 1000);
     }
 }

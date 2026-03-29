@@ -11,7 +11,6 @@ public class GpxRunnable implements Runnable {
     private final GpxBuilder gpxBuilder;
     private final Handler handler;
 
-    // The Constructor: This is how the Service "hands over" the tools
     public GpxRunnable(Handler handler, LocationService locationService, GpxBuilder gpxBuilder) {
         this.handler = handler;
         this.locationService = locationService;

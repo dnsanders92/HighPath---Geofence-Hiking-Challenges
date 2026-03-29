@@ -2,7 +2,7 @@ package com.example.highpath.Calculations;
 
 public class CalculateDistance {
 
-    private static final double R = 6371000;
+    private static final double R = 6371.0;
 
     public static double equirectangular(double previousLat, double previousLon,
                                          double currentLat, double currentLon) {
