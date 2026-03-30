@@ -20,6 +20,7 @@ import com.example.highpath.Runnables.GpxRunnable;
 import com.example.highpath.Runnables.PaceRunnable;
 import com.example.highpath.Runnables.TimeRunnable;
 import com.example.highpath.Runnables.MetricsRunnable;
+import com.example.highpath.Utilities.GPX.GPXParser;
 import com.example.highpath.Utilities.GPX.GpxBuilder;
 
 import java.io.IOException;
@@ -38,8 +39,10 @@ public class RecordingService extends Service {
     private static final String EXTRA_FILE_PATH = "extra_file_path";
     private static final String EXTRA_FILE_NAME = "extra_file_name";
 
-    private String filePath, fileName;
+    private String filePath, fileName, fullPath;
+
     private GpxBuilder gpxBuilder;
+    private GPXParser gpxParser;
 
     private LocationService locationService;
     private GpxRunnable gpxRunnable;
@@ -76,6 +79,7 @@ public class RecordingService extends Service {
         if (intent != null) {
             filePath = intent.getStringExtra(EXTRA_FILE_PATH);
             fileName = intent.getStringExtra(EXTRA_FILE_NAME);
+            fullPath = filePath + "/" + fileName;
 
             if (filePath != null && fileName != null) {
                 gpxBuilder = new GpxBuilder(filePath, fileName);
@@ -130,20 +134,19 @@ public class RecordingService extends Service {
         sendStatusBroadcast(false);
 
         if (handler != null) {
-            if (gpxRunnable != null) handler.removeCallbacks(gpxRunnable);
-            if (timeRunnable != null) handler.removeCallbacks(timeRunnable);
-            if (metricsRunnable != null) handler.removeCallbacks(metricsRunnable);
-            if (paceRunnable != null) handler.removeCallbacks(paceRunnable);
+            handler.removeCallbacksAndMessages(null);
         }
 
         if (locationService != null) locationService.stopLocationUpdates();
 
         if (gpxBuilder != null) {
             try {
+                // 1. Properly close the XML file first
                 gpxBuilder.gpxFooter();
 
-                // Call the builder here
-                new ActivityBuilder().insertActivity(getApplicationContext(), filePath);
+                // 2. Hand off the file path to the Builder.
+                // The Builder will handle parsing on a background thread.
+                new ActivityBuilder().insertActivity(getApplicationContext(), fullPath);
 
             } catch (IOException e) {
                 Log.e(TAG, "Error closing GPX", e);

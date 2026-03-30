@@ -1,36 +1,43 @@
 package com.example.highpath.Calculations;
 
-import java.util.Locale;
+import android.annotation.SuppressLint;
 
 public class CalculatePace {
 
-    private static int minutes(int totalSeconds) {
-        return totalSeconds / 60;
-    }
+    /**
+     * Calculates the raw pace in minutes per kilometer.
+     * Example: 500 seconds over 1km = 8.33 minutes/km.
+     */
+    public static double pace(long movingDurationSeconds, double totalDistanceKM) {
 
-    private static int remainingSeconds(int totalSeconds) {
-        return totalSeconds % 60;
-    }
-
-    private static double kilometres(double metres) {
-        return metres / 1000.0;
-    }
-
-    public static String pace(int totalSeconds, double metres) {
-        if (metres <= 0 || totalSeconds <= 0) {
-            return "0:00 min/km";
+        // Safety: Prevent division by zero or negative results
+        if (totalDistanceKM <= 0.001 || movingDurationSeconds <= 0) {
+            return 0.0;
         }
 
-        double km = kilometres(metres);
-        double secondsPerKm = totalSeconds / km;
+        // 1. Convert seconds to minutes (using 60.0 to maintain decimal precision)
+        double totalMinutes = movingDurationSeconds / 60.0;
 
-        int paceMinutes = minutes((int) secondsPerKm);
-        int paceSeconds = remainingSeconds((int) secondsPerKm);
+        // 2. Return Minutes divided by Kilometers
+        return totalMinutes / totalDistanceKM;
+    }
 
-        if (paceMinutes >= 100) {
-            return "99:59 min/km";
+    /**
+     * Converts a raw pace (e.g., 8.5) into a readable "MM:SS" string (e.g., "08:30").
+     */
+    @SuppressLint("DefaultLocale")
+    public static String formatPaceToString(double rawPace) {
+
+        if (rawPace <= 0) {
+            return "00:00";
         }
 
-        return String.format(Locale.getDefault(), "%d:%02d min/km", paceMinutes, paceSeconds);
+        // The whole number is the minutes
+        int minutes = (int) rawPace;
+
+        // The decimal remainder multiplied by 60 gives the seconds
+        int seconds = (int) ((rawPace - minutes) * 60);
+
+        return String.format("%02d:%02d", minutes, seconds);
     }
 }

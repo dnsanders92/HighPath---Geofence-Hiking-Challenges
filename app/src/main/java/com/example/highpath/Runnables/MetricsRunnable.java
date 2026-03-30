@@ -63,6 +63,6 @@ public class MetricsRunnable implements Runnable {
         intent.setPackage(context.getPackageName());
         context.sendBroadcast(intent);
 
-        handler.postDelayed(this, 5000);
+        handler.postDelayed(this, 2000);
     }
 }

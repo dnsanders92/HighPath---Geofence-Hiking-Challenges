@@ -47,8 +47,11 @@ public class GpxBuilder {
         File gpxFile = new File(filePath, fileName);
         FileWriter writer = new FileWriter(gpxFile, true);
 
+        String time = java.time.Instant.now().toString();
+
         writer.write(String.format("\n      <trkpt lat=\"%f\" lon=\"%f\">\n", lat, lon));
         writer.write(String.format("        <ele>%f</ele>\n", ele));
+        writer.write(String.format("        <time>%s</time>\n", time));
         writer.write("      </trkpt>");
 
         writer.close();
