@@ -29,7 +29,7 @@ public class GpxBuilder {
         FileWriter writer = new FileWriter(gpxFile, true);
 
         writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        writer.append("<gpx version=\"1.1\" creator=\"Stride\"\n");
+        writer.append("<gpx version=\"1.1\" creator=\"HighPath\"\n");
         writer.append("     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
         writer.append("     xmlns:ogr=\"http://osgeo.org/gdal\"\n");
         writer.append("     xmlns=\"http://www.topografix.com/GPX/1/1\"\n");

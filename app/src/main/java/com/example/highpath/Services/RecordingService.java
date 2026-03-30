@@ -15,6 +15,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import com.example.highpath.Database.DatabaseServices.ActivityBuilder;
 import com.example.highpath.Runnables.GpxRunnable;
 import com.example.highpath.Runnables.PaceRunnable;
 import com.example.highpath.Runnables.TimeRunnable;
@@ -140,6 +141,10 @@ public class RecordingService extends Service {
         if (gpxBuilder != null) {
             try {
                 gpxBuilder.gpxFooter();
+
+                // Call the builder here
+                new ActivityBuilder().insertActivity(getApplicationContext(), filePath);
+
             } catch (IOException e) {
                 Log.e(TAG, "Error closing GPX", e);
             }

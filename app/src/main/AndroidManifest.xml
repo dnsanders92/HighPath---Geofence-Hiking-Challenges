@@ -20,19 +20,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HighPath"
         tools:targetApi="31">
-
+        <activity
+            android:name=".Activities.HikeSummeryActivity"
+            android:exported="false" />
         <activity
             android:name=".Activities.LoginActivity"
             android:exported="false"
-            android:screenOrientation="portrait" />
-
-        <!-- Correct service location -->
+            android:screenOrientation="portrait" /> <!-- Correct service location -->
         <service
             android:name=".Services.RecordingService"
             android:enabled="true"
             android:exported="false"
-            android:stopWithTask="false"
-            android:foregroundServiceType="location" />
+            android:foregroundServiceType="location"
+            android:stopWithTask="false" />
 
         <activity
             android:name=".Activities.MainActivity"
@@ -40,10 +40,10 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>
