@@ -1,6 +1,8 @@
 package com.example.highpath.Calculations;
 
+import android.content.Context;
 import android.util.Log;
+import com.example.highpath.Utilities.CheckGeofence;
 import com.example.highpath.Utilities.GPX.GPXData;
 import com.example.highpath.Utilities.GPX.GPXParser;
 
@@ -14,37 +16,33 @@ public class CalculateFinalMetrics {
     public long totalTimeMoving = 0;
     public double averagePace = 0.0;
 
-    public void calculateMetrics(String filePath) {
+    // Empty constructor keeps other classes from breaking
+    public CalculateFinalMetrics() {}
+
+    public void calculateMetrics(Context context, String filePath) {
         try {
-            // 1. Parse the GPX file
             GPXData gpx = new GPXParser().parse(filePath);
 
-            // 2. CHECK if gpx is null and has data BEFORE calling methods on it
             if (gpx != null && gpx.latitudes.size() >= 2) {
-
-                // Calculate Distance
+                // 1. Core Calculations
                 totalDistanceKM = CalculateDistance.totalDistance(gpx.latitudes, gpx.longitudes);
+                totalDistanceM = totalDistanceKM * 1000;
 
-                // Calculate Elevation. [0] = elevation gain, [1] = elevation loss.
                 double[] elevations = CalculateElevation.calcGainLoss(gpx.elevations);
                 totalElevationGainM = elevations[0];
                 totalElevationLossM = elevations[1];
 
                 totalTimeOutside = CalculateTime.getTotalDurationSeconds(gpx.timestamps);
                 totalTimeMoving = CalculateTime.getMovingDurationSeconds(gpx.timestamps, gpx.latitudes, gpx.longitudes);
-
-                totalDistanceM = totalDistanceKM * 1000;
-
                 averagePace = CalculatePace.pace(totalTimeOutside, totalDistanceM);
 
-                Log.d("FinalMetrics", "Calculation Success: " + totalDistanceKM + "km");
-            } else {
-                Log.w("FinalMetrics", "GPX data was null or too short.");
-            }
+                CheckGeofence geofence = new CheckGeofence();
+                geofence.checkGeofence(context, gpx);
 
+                Log.d("FinalMetrics", "Calculation Success");
+            }
         } catch (Exception e) {
-            Log.e("FinalMetrics", "Error parsing GPX file for metrics", e);
-            // Values remain 0.0 due to initializations
+            Log.e("FinalMetrics", "Error parsing GPX", e);
         }
     }
 }

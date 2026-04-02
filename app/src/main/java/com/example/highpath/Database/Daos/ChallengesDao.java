@@ -13,21 +13,26 @@ import java.util.List;
 @Dao
 public interface ChallengesDao {
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertChallenge(ChallengesEntity challenge);
 
     @Query("SELECT * FROM challenges")
     List<ChallengesEntity> getAllChallenges();
 
-    @Update
-    void updateChallenge(ChallengesEntity challenge);
-
-    @Query("SELECT * FROM challenges WHERE challenge_id = :id")
+    @Query("SELECT * FROM challenges WHERE challenge_id = :id LIMIT 1")
     ChallengesEntity getChallengeById(int id);
 
-    @Query("SELECT * FROM challenges WHERE challenge_name = :name LIMIT 1")
-    ChallengesEntity getChallengeByName(String name);
+    // --- ADD THESE TWO METHODS BELOW ---
 
-    @Query("DELETE FROM challenges")
-    void deleteAllChallenges();
+    /**
+     * Finds the challenge row that matches the summit's region (e.g., "Ulster").
+     */
+    @Query("SELECT * FROM challenges WHERE region = :regionName LIMIT 1")
+    ChallengesEntity getChallengeByRegion(String regionName);
+
+    /**
+     * Saves the updated 'completed_summits' count back to the database.
+     */
+    @Update
+    void updateChallenge(ChallengesEntity challenge);
 }

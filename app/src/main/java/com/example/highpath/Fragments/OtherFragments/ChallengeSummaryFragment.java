@@ -51,50 +51,76 @@ public class ChallengeSummaryFragment extends Fragment {
     }
 
     private void loadChallengeDetails() {
-        new Thread(() -> {
-            LocalDatabase db = LocalDatabase.getInstance(requireContext());
-            ChallengesEntity challenge = db.challengesDao().getChallengeById(challengeId);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                LocalDatabase db = LocalDatabase.getInstance(requireContext());
+                ChallengesEntity challenge = db.challengesDao().getChallengeById(challengeId);
 
-            if (challenge != null) {
-                // Fetch summits using the matching region string
-                List<SummitsEntity> summits = db.summitsDao().getSummitsByRegion(challenge.getRegion());
+                if (challenge != null) {
 
-                Bitmap bitmap = null;
-                if (challenge.getChallengeThumbnail() != null) {
-                    byte[] bytes = challenge.getChallengeThumbnail();
-                    bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                }
+                    List<SummitsEntity> summits = db.summitsDao().getSummitsByRegion(challenge.getRegion());
 
-                Bitmap finalBitmap = bitmap;
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(() -> {
-                        if (isAdded()) {
-                            challengeName.setText(challenge.getChallengeName());
-                            challengeDescription.setText(challenge.getLongDescription());
+                    Bitmap bitmap = null;
+                    if (challenge.getChallengeThumbnail() != null) {
+                        byte[] bytes = challenge.getChallengeThumbnail();
+                        bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    }
 
-                            String progress = challenge.getCompletedSummits() + " / " + challenge.getTotalSummits() + " Summits";
-                            if (summitsCount != null) summitsCount.setText(progress);
+                    Bitmap finalBitmap = bitmap;
 
-                            if (finalBitmap != null) challengeImage.setImageBitmap(finalBitmap);
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (isAdded()) {
+                                    challengeName.setText(challenge.getChallengeName());
+                                    challengeDescription.setText(challenge.getLongDescription());
 
-                            setupListView(summits);
-                        }
-                    });
+                                    String progress = challenge.getCompletedSummits() + " / " + challenge.getTotalSummits() + " Summits";
+                                    if (summitsCount != null) {
+                                        summitsCount.setText(progress);
+                                    }
+
+                                    if (finalBitmap != null) {
+                                        challengeImage.setImageBitmap(finalBitmap);
+                                    }
+
+                                    // Fill the list of summits
+                                    setupListView(summits);
+                                }
+                            }
+                        });
+                    }
                 }
             }
         }).start();
     }
 
     private void setupListView(List<SummitsEntity> summits) {
-        if (summits == null || summits.isEmpty()) return;
+        if (summits == null) return;
 
         List<String> names = new ArrayList<>();
-        for (SummitsEntity s : summits) {
-            String status = s.isCompleted() ? " [DONE]" : "";
-            names.add(s.getSummitName() + " (" + s.getElevation() + "m)" + status);
+
+        for (int i = 0; i < summits.size(); i++) {
+            SummitsEntity s = summits.get(i);
+
+            String status = "";
+            if (s.isCompleted()) {
+                status = " [DONE]";
+            }
+
+            String displayText = s.getSummitName() + " (" + s.getElevation() + "m)" + status;
+            names.add(displayText);
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, names);
-        summitList.setAdapter(adapter);
+        if (getContext() != null) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                    requireContext(),
+                    android.R.layout.simple_list_item_1,
+                    names
+            );
+            summitList.setAdapter(adapter);
+        }
     }
 }
