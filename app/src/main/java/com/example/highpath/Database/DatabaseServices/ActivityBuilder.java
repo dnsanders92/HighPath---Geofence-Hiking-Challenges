@@ -16,44 +16,46 @@ public class ActivityBuilder {
 
     public void insertActivity(Context context, String fullPath) {
         new Thread(() -> {
-            // 1. Run the calculations first
             CalculateFinalMetrics metrics = new CalculateFinalMetrics();
-            metrics.calculateMetrics(fullPath); // Essential: This populates the variables
+            metrics.calculateMetrics(fullPath);
 
-            // 2. Get Database instances
             LocalDatabase db = LocalDatabase.getInstance(context);
             UserDao userDao = db.userDao();
             ActivityDao activityDao = db.activityDao();
 
-            // 3. Get User and build Entity
             UserEntity user = userDao.getSingleUser();
 
             if (user != null) {
+                // 1. Create and Save the Activity Record
                 ActivityEntity activity = new ActivityEntity();
-
-                // Set Identity and Name
                 activity.setActivityId(user.getUserId() + "_" + System.currentTimeMillis());
                 activity.setActivityName("Finished Hike");
-
-                // Map the calculated metrics
                 activity.setDistance(metrics.totalDistanceKM);
                 activity.setElevationGain(metrics.totalElevationGainM);
                 activity.setElevationLoss(metrics.totalElevationLossM);
                 activity.setAveragePace(metrics.averagePace);
                 activity.setMovingTime(metrics.totalTimeMoving);
                 activity.setActualTime(metrics.totalTimeOutside);
-
-                // Placeholder/Additional Data
-                activity.setCalories(1230);
                 activity.setGpxFilePath(fullPath);
                 activity.setTimestamp(System.currentTimeMillis());
+                activity.setCalories(1230); // Placeholder
 
-                // 4. Insert into Database
                 activityDao.insertActivity(activity);
 
-                Log.d(TAG, "Activity successfully saved for user: " + user.getUserId());
+                // 2. Update the User's Cumulative Statistics
+                // Note: We cast doubles to ints to match your UserEntity fields
+                user.setTotalDistanceKm(user.getTotalDistanceKm() + (int) Math.round(metrics.totalDistanceKM));
+                user.setTotalElevationM(user.getTotalElevationM() + (int) Math.round(metrics.totalElevationGainM));
+                user.setTotalTimeOutsideSeconds(user.getTotalTimeOutsideSeconds() + (int) metrics.totalTimeOutside);
+                user.setTotalMovingTimeSeconds(user.getTotalMovingTimeSeconds() + (int) metrics.totalTimeMoving);
+                user.setCompletedActivities(user.getCompletedActivities() + 1);
+
+                // 3. Persist the changes to the user table
+                userDao.update(user);
+
+                Log.d(TAG, "Activity saved and lifetime stats updated for: " + user.getFirstName());
             } else {
-                Log.w(TAG, "Could not save activity: No user found in database.");
+                Log.w(TAG, "Activity not saved: No user found.");
             }
         }).start();
     }

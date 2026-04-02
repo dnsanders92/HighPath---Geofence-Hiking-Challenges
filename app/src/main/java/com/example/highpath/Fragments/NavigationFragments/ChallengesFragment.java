@@ -1,66 +1,65 @@
 package com.example.highpath.Fragments.NavigationFragments;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.widget.ListView;
+import androidx.fragment.app.Fragment;
+import com.example.highpath.Adapters.ChallengesAdapter;
+import com.example.highpath.Database.Entities.ChallengesEntity;
+import com.example.highpath.Database.LocalDatabase;
+import com.example.highpath.Fragments.OtherFragments.ChallengeSummaryFragment;
 import com.example.highpath.R;
+import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ChallengesFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class ChallengesFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private ListView challengesList;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public ChallengesFragment() {
-        // Required empty public constructor
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_challenges, container, false);
+        challengesList = view.findViewById(R.id.challenges_list_view);
+        return view;
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ChallengesFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ChallengesFragment newInstance(String param1, String param2) {
-        ChallengesFragment fragment = new ChallengesFragment();
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadChallenges();
+    }
+
+    private void loadChallenges() {
+        new Thread(() -> {
+            LocalDatabase db = LocalDatabase.getInstance(requireContext());
+            List<ChallengesEntity> list = db.challengesDao().getAllChallenges();
+
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    if (isAdded() && list != null) {
+                        ChallengesAdapter adapter = new ChallengesAdapter(getContext(), list);
+                        challengesList.setAdapter(adapter);
+
+                        challengesList.setOnItemClickListener((parent, view1, position, id) -> {
+                            ChallengesEntity clicked = (ChallengesEntity) parent.getItemAtPosition(position);
+                            openSummary(clicked.getChallengeId());
+                        });
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private void openSummary(int challengeId) {
+        ChallengeSummaryFragment summaryFragment = new ChallengeSummaryFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+        args.putInt("challengeId", challengeId);
+        summaryFragment.setArguments(args);
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_challenges, container, false);
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.container, summaryFragment)
+                .addToBackStack(null)
+                .commit();
     }
 }

@@ -29,19 +29,13 @@ public class ActivityAdapter extends BaseAdapter {
     }
 
     @Override
-    public int getCount() {
-        return activities.size();
-    }
+    public int getCount() { return activities.size(); }
 
     @Override
-    public Object getItem(int position) {
-        return activities.get(position);
-    }
+    public Object getItem(int position) { return activities.get(position); }
 
     @Override
-    public long getItemId(int position) {
-        return position;
-    }
+    public long getItemId(int position) { return position; }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -52,12 +46,13 @@ public class ActivityAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.activities_list_item, parent, false);
 
             holder = new ViewHolder();
-            holder.activityName = convertView.findViewById(R.id.activityName);
-            holder.activityDistance = convertView.findViewById(R.id.activityDistance);
+            holder.activityName      = convertView.findViewById(R.id.activityName);
+            holder.activityDate      = convertView.findViewById(R.id.activityDate);
+            holder.activityDistance  = convertView.findViewById(R.id.activityDistance);
             holder.activityElevation = convertView.findViewById(R.id.activityElevation);
-            holder.activityTime = convertView.findViewById(R.id.activityTime);
-            holder.activityDate = convertView.findViewById(R.id.activityDate);
-            holder.image = convertView.findViewById(R.id.section1Image);
+            holder.activityTime      = convertView.findViewById(R.id.activityTime);
+            holder.activityPace      = convertView.findViewById(R.id.activityPace);
+            holder.image             = convertView.findViewById(R.id.section1Image);
 
             convertView.setTag(holder);
         } else {
@@ -66,25 +61,15 @@ public class ActivityAdapter extends BaseAdapter {
 
         ActivityEntity a = activities.get(position);
 
-        // Name
         holder.activityName.setText(a.getActivityName());
-
-        // Distance (already rounded in ActivityBuilder)
-        holder.activityDistance.setText(a.getDistance() + " km");
-
-        // Elevation gain (rounded to 1 decimal place)
-        holder.activityElevation.setText(a.getElevationGain() + " m");
-
-        // Actual time (you can format this later)
-        holder.activityTime.setText(formatTime(a.getActualTime()));
-
-        // Date (formatted: 23 Feb 2026)
         holder.activityDate.setText(formatDate(a.getTimestamp()));
+        holder.activityDistance.setText(a.getDistance() + " km");
+        holder.activityElevation.setText(a.getElevationGain() + " m");
+        holder.activityTime.setText(formatTime(a.getActualTime()));
+        holder.activityPace.setText(formatPace(a.getAveragePace()));
 
         return convertView;
     }
-
-    // Helper Methods
 
     private String formatDate(long timestamp) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.UK);
@@ -92,9 +77,8 @@ public class ActivityAdapter extends BaseAdapter {
     }
 
     private String formatTime(long seconds) {
-        long hours = seconds / 3600;
+        long hours   = seconds / 3600;
         long minutes = (seconds % 3600) / 60;
-
         if (hours > 0) {
             return hours + "h " + minutes + "m";
         } else {
@@ -102,8 +86,17 @@ public class ActivityAdapter extends BaseAdapter {
         }
     }
 
+    // averagePace is stored as decimal minutes per km e.g. 7.5 = 7m 30s/km
+    private String formatPace(double paceMinPerKm) {
+        if (paceMinPerKm <= 0) return "--";
+        int minutes = (int) paceMinPerKm;
+        int seconds = (int) Math.round((paceMinPerKm - minutes) * 60);
+        return String.format(Locale.UK, "%d:%02d/km", minutes, seconds);
+    }
+
     static class ViewHolder {
-        TextView activityName, activityDistance, activityElevation, activityTime, activityDate;
+        TextView activityName, activityDate, activityDistance,
+                activityElevation, activityTime, activityPace;
         ImageView image;
     }
 }

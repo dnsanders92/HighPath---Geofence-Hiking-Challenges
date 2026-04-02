@@ -19,6 +19,10 @@ public class CheckUserState {
                 final boolean hasUser = db.userDao().hasUser();
 
                 if (!hasUser) {
+
+                    new AddChallenges().insertChallenges(activity);
+                    new AddSummits().insertSummits(activity);
+
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
