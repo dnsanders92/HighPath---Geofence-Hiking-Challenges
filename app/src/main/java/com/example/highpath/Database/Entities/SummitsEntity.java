@@ -14,11 +14,14 @@ public class SummitsEntity {
     @ColumnInfo(name = "summit_name")
     private String summitName;
 
-    @ColumnInfo(name = "region") // Updated to region
+    @ColumnInfo(name = "region")
     private String region;
 
     @ColumnInfo(name = "elevation")
     private int elevation;
+
+    @ColumnInfo(name = "prominence")
+    private int prominence;
 
     @ColumnInfo(name = "latitude")
     private double latitude;
@@ -29,25 +32,78 @@ public class SummitsEntity {
     @ColumnInfo(name = "completed")
     private boolean completed;
 
-    // Getters and Setters
-    public int getSummitId() { return summitId; }
-    public void setSummitId(int summitId) { this.summitId = summitId; }
+    @ColumnInfo(name = "description")
+    private String description;
 
-    public String getSummitName() { return summitName; }
-    public void setSummitName(String summitName) { this.summitName = summitName; }
+    public int getSummitId() {
+        return summitId;
+    }
 
-    public String getRegion() { return region; }
-    public void setRegion(String region) { this.region = region; }
+    public void setSummitId(int summitId) {
+        this.summitId = summitId;
+    }
 
-    public int getElevation() { return elevation; }
-    public void setElevation(int elevation) { this.elevation = elevation; }
+    public String getSummitName() {
+        return summitName;
+    }
 
-    public double getLatitude() { return latitude; }
-    public void setLatitude(double latitude) { this.latitude = latitude; }
+    public void setSummitName(String summitName) {
+        this.summitName = summitName;
+    }
 
-    public double getLongitude() { return longitude; }
-    public void setLongitude(double longitude) { this.longitude = longitude; }
+    public String getRegion() {
+        return region;
+    }
 
-    public boolean isCompleted() { return completed; }
-    public void setCompleted(boolean completed) { this.completed = completed; }
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public int getElevation() {
+        return elevation;
+    }
+
+    public void setElevation(int elevation) {
+        this.elevation = elevation;
+    }
+
+    public int getProminence() {
+        return prominence;
+    }
+
+    public void setProminence(int prominence) {
+        this.prominence = prominence;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

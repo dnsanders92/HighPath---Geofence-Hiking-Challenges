@@ -2,4 +2,5 @@
     <string name="app_name">HighPath</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="open_weather_api_key">236908b3196ed5091106391e27eca5c9</string>
 </resources>
