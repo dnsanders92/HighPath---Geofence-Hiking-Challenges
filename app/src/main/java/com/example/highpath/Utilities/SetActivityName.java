@@ -4,7 +4,27 @@ import java.util.Calendar;
 
 public class SetActivityName {
 
-    String activityName() {
+    public static String summitName = null;
+
+    public void checkSummit(String name) {
+
+        if (summitName != null) {
+
+        }
+    }
+
+    public String getActivityName() {
+
+        if (summitName != null) {
+            return summitName + " Hike";
+        }
+        else {
+            return standardName();
+        }
+    }
+
+    public String standardName() {
+
         Calendar calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
 

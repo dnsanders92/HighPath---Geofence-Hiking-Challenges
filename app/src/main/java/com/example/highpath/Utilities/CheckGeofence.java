@@ -36,6 +36,10 @@ public class CheckGeofence {
 
                 if (distance <= geofenceRadius) {
                     updateDatabase(context, summit);
+
+                    if (SetActivityName.summitName == null) {
+                        SetActivityName.summitName = summit.getSummitName();
+                    }
                 }
             }
         }

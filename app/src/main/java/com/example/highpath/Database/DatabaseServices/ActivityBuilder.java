@@ -8,6 +8,7 @@ import com.example.highpath.Database.Daos.ActivityDao;
 import com.example.highpath.Database.Daos.UserDao;
 import com.example.highpath.Database.Entities.ActivityEntity;
 import com.example.highpath.Database.Entities.UserEntity;
+import com.example.highpath.Utilities.SetActivityName;
 
 public class ActivityBuilder {
 
@@ -19,6 +20,7 @@ public class ActivityBuilder {
             CalculateFinalMetrics metrics = new CalculateFinalMetrics();
 
             metrics.calculateMetrics(context, fullPath);
+            SetActivityName setActivityName = new SetActivityName();
 
             LocalDatabase db = LocalDatabase.getInstance(context);
             UserDao userDao = db.userDao();
@@ -29,7 +31,7 @@ public class ActivityBuilder {
             if (user != null) {
                 ActivityEntity activity = new ActivityEntity();
                 activity.setActivityId(user.getUserId() + "_" + System.currentTimeMillis());
-                activity.setActivityName("Finished Hike");
+                activity.setActivityName(setActivityName.getActivityName());
                 activity.setDistance(metrics.totalDistanceKM);
                 activity.setElevationGain(metrics.totalElevationGainM);
                 activity.setElevationLoss(metrics.totalElevationLossM);
