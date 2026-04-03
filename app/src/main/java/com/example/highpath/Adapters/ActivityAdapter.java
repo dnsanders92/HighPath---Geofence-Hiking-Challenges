@@ -53,6 +53,7 @@ public class ActivityAdapter extends BaseAdapter {
             holder.activityTime      = convertView.findViewById(R.id.activityTime);
             holder.activityPace      = convertView.findViewById(R.id.activityPace);
             holder.image             = convertView.findViewById(R.id.section1Image);
+            holder.trophyBadge       = convertView.findViewById(R.id.trophyBadgeContainer);
 
             convertView.setTag(holder);
         } else {
@@ -63,10 +64,18 @@ public class ActivityAdapter extends BaseAdapter {
 
         holder.activityName.setText(a.getActivityName());
         holder.activityDate.setText(formatDate(a.getTimestamp()));
-        holder.activityDistance.setText(a.getDistance() + " km");
-        holder.activityElevation.setText(a.getElevationGain() + " m");
+        holder.activityDistance.setText(String.format(Locale.UK, "%.2f km", a.getDistance()));
+        holder.activityElevation.setText((int)a.getElevationGain() + " m");
         holder.activityTime.setText(formatTime(a.getActualTime()));
         holder.activityPace.setText(formatPace(a.getAveragePace()));
+
+        if (holder.trophyBadge != null) {
+            if (a.isChallenge()) {
+                holder.trophyBadge.setVisibility(View.VISIBLE);
+            } else {
+                holder.trophyBadge.setVisibility(View.GONE);
+            }
+        }
 
         return convertView;
     }
@@ -86,7 +95,6 @@ public class ActivityAdapter extends BaseAdapter {
         }
     }
 
-    // averagePace is stored as decimal minutes per km e.g. 7.5 = 7m 30s/km
     private String formatPace(double paceMinPerKm) {
         if (paceMinPerKm <= 0) return "--";
         int minutes = (int) paceMinPerKm;
@@ -98,5 +106,6 @@ public class ActivityAdapter extends BaseAdapter {
         TextView activityName, activityDate, activityDistance,
                 activityElevation, activityTime, activityPace;
         ImageView image;
+        View trophyBadge;
     }
 }

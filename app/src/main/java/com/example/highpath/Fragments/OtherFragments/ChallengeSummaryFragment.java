@@ -51,47 +51,38 @@ public class ChallengeSummaryFragment extends Fragment {
     }
 
     private void loadChallengeDetails() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                LocalDatabase db = LocalDatabase.getInstance(requireContext());
-                ChallengesEntity challenge = db.challengesDao().getChallengeById(challengeId);
+        new Thread(() -> {
+            LocalDatabase db = LocalDatabase.getInstance(requireContext());
+            ChallengesEntity challenge = db.challengesDao().getChallengeById(challengeId);
 
-                if (challenge != null) {
+            if (challenge != null) {
 
-                    List<SummitsEntity> summits = db.summitsDao().getSummitsByRegion(challenge.getRegion());
+                List<SummitsEntity> summits = db.summitsDao().getSummitsByRegion(challenge.getRegion());
 
-                    Bitmap bitmap = null;
-                    if (challenge.getChallengeThumbnail() != null) {
-                        byte[] bytes = challenge.getChallengeThumbnail();
-                        bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    }
+                Bitmap bitmap = null;
+                if (challenge.getChallengeThumbnail() != null) {
+                    byte[] bytes = challenge.getChallengeThumbnail();
+                    bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                }
 
-                    Bitmap finalBitmap = bitmap;
+                Bitmap finalBitmap = bitmap;
 
-                    if (getActivity() != null) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (isAdded()) {
-                                    challengeName.setText(challenge.getChallengeName());
-                                    challengeDescription.setText(challenge.getLongDescription());
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        if (isAdded()) {
+                            challengeName.setText(challenge.getChallengeName());
+                            challengeDescription.setText(challenge.getLongDescription());
 
-                                    String progress = challenge.getCompletedSummits() + " / " + challenge.getTotalSummits() + " Summits";
-                                    if (summitsCount != null) {
-                                        summitsCount.setText(progress);
-                                    }
+                            String progress = challenge.getCompletedSummits() + " / " + challenge.getTotalSummits() + " Summits";
+                            summitsCount.setText(progress);
 
-                                    if (finalBitmap != null) {
-                                        challengeImage.setImageBitmap(finalBitmap);
-                                    }
-
-                                    // Fill the list of summits
-                                    setupListView(summits);
-                                }
+                            if (finalBitmap != null) {
+                                challengeImage.setImageBitmap(finalBitmap);
                             }
-                        });
-                    }
+
+                            setupListView(summits);
+                        }
+                    });
                 }
             }
         }).start();
@@ -102,14 +93,8 @@ public class ChallengeSummaryFragment extends Fragment {
 
         List<String> names = new ArrayList<>();
 
-        for (int i = 0; i < summits.size(); i++) {
-            SummitsEntity s = summits.get(i);
-
-            String status = "";
-            if (s.isCompleted()) {
-                status = " [DONE]";
-            }
-
+        for (SummitsEntity s : summits) {
+            String status = s.isCompleted() ? " [DONE]" : "";
             String displayText = s.getSummitName() + " (" + s.getElevation() + "m)" + status;
             names.add(displayText);
         }
@@ -120,7 +105,26 @@ public class ChallengeSummaryFragment extends Fragment {
                     android.R.layout.simple_list_item_1,
                     names
             );
+
             summitList.setAdapter(adapter);
+
+            summitList.setOnItemClickListener((parent, view, position, id) -> {
+                int summitId = summits.get(position).getSummitId();
+                openSummary(summitId);
+            });
         }
+    }
+
+    private void openSummary(int summitId) {
+        SummitDataFragment summitDataFragment = new SummitDataFragment();
+
+        Bundle args = new Bundle();
+        args.putInt("summitId", summitId);
+        summitDataFragment.setArguments(args);
+
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.container, summitDataFragment)
+                .addToBackStack(null)
+                .commit();
     }
 }

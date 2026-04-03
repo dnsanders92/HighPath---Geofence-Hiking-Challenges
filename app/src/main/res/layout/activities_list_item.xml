@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="0dp"
+    android:layout_marginVertical="8dp"
     app:cardCornerRadius="14dp"
     app:cardElevation="4dp">
 
@@ -13,16 +13,42 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Banner Image -->
-        <ImageView
-            android:id="@+id/section1Image"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:scaleType="centerCrop"
-            android:background="#E0E0E0"
-            android:src="@drawable/default_banner_image" />
+            android:layout_height="150dp">
 
-        <!-- Name + Date row -->
+            <ImageView
+                android:id="@+id/section1Image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="#E0E0E0"
+                android:src="@drawable/default_banner_image" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/trophyBadgeContainer"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="12dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="#CC000000"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/activityBadgeText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="&#x1F3C6;"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp" />
+
+            </androidx.cardview.widget.CardView>
+
+        </FrameLayout>
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -55,14 +81,12 @@
 
         </RelativeLayout>
 
-        <!-- Divider -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginHorizontal="14dp"
             android:background="#EEEEEE" />
 
-        <!-- Stats row: 4 columns -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -71,7 +95,6 @@
             android:paddingTop="10dp"
             android:paddingBottom="14dp">
 
-            <!-- Distance -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -95,10 +118,8 @@
                     android:textColor="#1A1A1A"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-
             </LinearLayout>
 
-            <!-- Elevation -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -122,10 +143,8 @@
                     android:textColor="#1A1A1A"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-
             </LinearLayout>
 
-            <!-- Time -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -149,10 +168,8 @@
                     android:textColor="#1A1A1A"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-
             </LinearLayout>
 
-            <!-- Pace -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -176,7 +193,6 @@
                     android:textColor="#1A1A1A"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-
             </LinearLayout>
 
         </LinearLayout>

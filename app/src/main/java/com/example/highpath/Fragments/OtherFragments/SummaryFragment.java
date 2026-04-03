@@ -20,7 +20,7 @@ import java.util.Locale;
 public class SummaryFragment extends Fragment {
 
     private String activityId;
-    private TextView nameView, distanceView, elevationView, actualTimeView, movingTimeView;
+    private TextView nameView, distanceView, elevationView, actualTimeView, movingTimeView, trophyBadge;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -42,6 +42,7 @@ public class SummaryFragment extends Fragment {
         elevationView = view.findViewById(R.id.elevationSummary);
         actualTimeView = view.findViewById(R.id.actualTimeSummary);
         movingTimeView = view.findViewById(R.id.movingTimeSummary);
+
 
         loadActivityFromDb();
     }

@@ -21,6 +21,7 @@ public class ActivityEntity {
     @ColumnInfo(name = "calories") private double calories;
     @ColumnInfo(name = "gpx_file_path") private String gpxFilePath;
     @ColumnInfo(name = "timestamp") private long timestamp;
+    @ColumnInfo(name = "is_challenge") private boolean isChallenge;
 
     @NonNull
     public String getActivityId() {
@@ -109,5 +110,13 @@ public class ActivityEntity {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public boolean isChallenge() {
+        return isChallenge;
+    }
+
+    public void setChallenge(boolean challenge) {
+        isChallenge = challenge;
     }
 }

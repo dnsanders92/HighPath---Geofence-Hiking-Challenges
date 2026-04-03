@@ -42,7 +42,7 @@ public class AddSummits {
             summits.add(create("Moylussa", "Munster", 532, 52.846, -8.513)); // Clare
 
             // --- ULSTER (7 Unique Summits for 9 Counties) ---
-            summits.add(create("Slieve Donard", "Ulster", 850, 54.180, -5.922)); // Down
+            summits.add(create("Slieve Donard", "Ulster", 850, 55.231, -7.496)); // Down
             summits.add(create("Errigal", "Ulster", 751, 55.2310, -8.112)); // Donegal
             summits.add(create("Sawel Mountain", "Ulster", 678, 54.819, -7.037)); // Derry & Tyrone
             summits.add(create("Cuilcagh", "Ulster", 665, 54.200, -7.800)); // Fermanagh & Cavan

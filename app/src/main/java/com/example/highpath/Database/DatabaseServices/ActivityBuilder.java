@@ -56,6 +56,7 @@ public class ActivityBuilder {
             } else {
                 Log.w(TAG, "No user found.");
             }
+
         }).start();
     }
 }
