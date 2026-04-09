@@ -36,6 +36,7 @@ dependencies {
     implementation("com.mapbox.maps:android:11.17.1")
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.annotation:annotation:1.9.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     testImplementation("junit:junit:4.13.2")
     annotationProcessor("androidx.room:room-compiler:2.6.1")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")

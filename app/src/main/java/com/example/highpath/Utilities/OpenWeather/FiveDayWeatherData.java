@@ -15,4 +15,5 @@ public class FiveDayWeatherData {
             HighLowTemps.add(Math.round(HighTemps.get(i)) + "° / " + Math.round(LowTemps.get(i)) + "°");
         }
     }
+
 }

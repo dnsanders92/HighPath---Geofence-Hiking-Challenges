@@ -15,8 +15,19 @@ import android.widget.Button;
 import com.example.highpath.Activities.MainActivity;
 import com.example.highpath.Fragments.OtherFragments.RecordingPanelFragment;
 import com.example.highpath.MapBox.LoadMapBox;
+import com.example.highpath.MapBox.LoadTrailPolyline;
 import com.example.highpath.R;
+import com.example.highpath.Utilities.TrailData;
+
+import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.Point;
+import com.mapbox.maps.CameraOptions;
+import com.mapbox.maps.CoordinateBounds;
+import com.mapbox.maps.EdgeInsets;
 import com.mapbox.maps.MapView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RecordFragment extends Fragment {
 
@@ -34,14 +45,26 @@ public class RecordFragment extends Fragment {
         Double lat = null;
         Double lon = null;
 
+        // Get current GPS location from MainActivity
         if (getActivity() instanceof MainActivity) {
             MainActivity main = (MainActivity) getActivity();
             lat = main.getLatitude();
             lon = main.getLongitude();
         }
 
-        mapLoader.initializeMap(requireContext(), mapView, true, lat, lon);
+        // If a trail is loaded, center map on trail start instead of GPS
+        if (TrailData.hasData()) {
+            double startLat = TrailData.latitudes.get(0);
+            double startLon = TrailData.longitudes.get(0);
 
+            mapLoader.initializeMap(requireContext(), mapView, true, startLat, startLon);
+            drawLoadedTrail();
+        } else {
+            // No trail → center on user location
+            mapLoader.initializeMap(requireContext(), mapView, true, lat, lon);
+        }
+
+        // Load bottom recording panel
         getChildFragmentManager()
                 .beginTransaction()
                 .replace(R.id.bottom_fragment_container, new RecordingPanelFragment())
@@ -50,14 +73,61 @@ public class RecordFragment extends Fragment {
         return view;
     }
 
+    // Draw the trail stored in TrailData
+    private void drawLoadedTrail() {
+        if (mapView == null) return;
+
+        List<Point> points = new ArrayList<>();
+        double minLat = 90, maxLat = -90, minLon = 180, maxLon = -180;
+
+        for (int i = 0; i < TrailData.latitudes.size(); i++) {
+            double lat = TrailData.latitudes.get(i);
+            double lon = TrailData.longitudes.get(i);
+
+            points.add(Point.fromLngLat(lon, lat));
+
+            if (lat < minLat) minLat = lat;
+            if (lat > maxLat) maxLat = lat;
+            if (lon < minLon) minLon = lon;
+            if (lon > maxLon) maxLon = lon;
+        }
+
+        LineString lineString = LineString.fromLngLats(points);
+
+        // Draw polyline
+        mapView.getMapboxMap().getStyle(style -> {
+            LoadTrailPolyline polylineLoader = new LoadTrailPolyline();
+            polylineLoader.draw(style, lineString);
+        });
+
+        // Zoom camera to fit trail
+        zoomToBounds(minLat, maxLat, minLon, maxLon);
+    }
+
+    // Camera zoom to fit trail bounds
+    private void zoomToBounds(double minLat, double maxLat, double minLon, double maxLon) {
+        CoordinateBounds bounds = new CoordinateBounds(
+                Point.fromLngLat(minLon, minLat),
+                Point.fromLngLat(maxLon, maxLat),
+                false
+        );
+
+        EdgeInsets padding = new EdgeInsets(150, 150, 150, 150);
+
+        CameraOptions camera = mapView.getMapboxMap().cameraForCoordinateBounds(
+                bounds, padding, 0.0, 0.0, null, null
+        );
+
+        mapView.getMapboxMap().setCamera(camera);
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         Button toggleMap = view.findViewById(R.id.btnToggleStyle);
-        toggleMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) { }
+        toggleMap.setOnClickListener(v -> {
+            // Add style toggle logic here if needed
         });
     }
 
@@ -71,11 +141,10 @@ public class RecordFragment extends Fragment {
         }
     }
 
+    // Called from MainActivity to recenter map
     public void centerMapFromActivity(double lat, double lon) {
         if (mapView != null) {
-            // Use your existing LoadMapBox centreMap which already uses mapView.post if you revert to that
             new LoadMapBox().centreMap(mapView, lat, lon);
         }
     }
-
 }

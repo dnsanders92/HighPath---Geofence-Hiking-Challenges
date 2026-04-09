@@ -8,17 +8,16 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.highpath.Adapters.SummitAdapter;
 import com.example.highpath.Database.LocalDatabase;
 import com.example.highpath.Database.Entities.ChallengesEntity;
 import com.example.highpath.Database.Entities.SummitsEntity;
 import com.example.highpath.R;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ChallengeSummaryFragment extends Fragment {
@@ -56,7 +55,6 @@ public class ChallengeSummaryFragment extends Fragment {
             ChallengesEntity challenge = db.challengesDao().getChallengeById(challengeId);
 
             if (challenge != null) {
-
                 List<SummitsEntity> summits = db.summitsDao().getSummitsByRegion(challenge.getRegion());
 
                 Bitmap bitmap = null;
@@ -65,14 +63,13 @@ public class ChallengeSummaryFragment extends Fragment {
                     bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 }
 
-                Bitmap finalBitmap = bitmap;
+                final Bitmap finalBitmap = bitmap;
 
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
                         if (isAdded()) {
                             challengeName.setText(challenge.getChallengeName());
                             challengeDescription.setText(challenge.getLongDescription());
-
                             String progress = challenge.getCompletedSummits() + " / " + challenge.getTotalSummits() + " Summits";
                             summitsCount.setText(progress);
 
@@ -89,35 +86,21 @@ public class ChallengeSummaryFragment extends Fragment {
     }
 
     private void setupListView(List<SummitsEntity> summits) {
-        if (summits == null) return;
+        if (summits == null || getContext() == null) return;
 
-        List<String> names = new ArrayList<>();
+        SummitAdapter adapter = new SummitAdapter(requireContext(), summits);
+        summitList.setAdapter(adapter);
 
-        for (SummitsEntity s : summits) {
-            String status = s.isCompleted() ? " [DONE]" : "";
-            String displayText = s.getSummitName() + " (" + s.getElevation() + "m)" + status;
-            names.add(displayText);
-        }
-
-        if (getContext() != null) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                    requireContext(),
-                    android.R.layout.simple_list_item_1,
-                    names
-            );
-
-            summitList.setAdapter(adapter);
-
-            summitList.setOnItemClickListener((parent, view, position, id) -> {
-                int summitId = summits.get(position).getSummitId();
-                openSummary(summitId);
-            });
-        }
+        summitList.setOnItemClickListener((parent, view, position, id) -> {
+            SummitsEntity selected = (SummitsEntity) parent.getItemAtPosition(position);
+            if (selected != null) {
+                openSummary(selected.getSummitId());
+            }
+        });
     }
 
     private void openSummary(int summitId) {
         SummitDataFragment summitDataFragment = new SummitDataFragment();
-
         Bundle args = new Bundle();
         args.putInt("summitId", summitId);
         summitDataFragment.setArguments(args);
