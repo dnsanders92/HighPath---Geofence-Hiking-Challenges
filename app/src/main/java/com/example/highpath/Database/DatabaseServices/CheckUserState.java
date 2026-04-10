@@ -21,7 +21,6 @@ public class CheckUserState {
                 if (!hasUser) {
 
                     new AddChallenges().insertChallenges(activity);
-                    new AddSummits().insertSummits(activity);
 
                     activity.runOnUiThread(new Runnable() {
                         @Override

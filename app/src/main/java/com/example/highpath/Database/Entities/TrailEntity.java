@@ -53,6 +53,10 @@ public class TrailEntity {
     @ColumnInfo(name = "max_lon")
     private double maxLon;
 
+    // --- New Description Field ---
+    @ColumnInfo(name = "description")
+    private String description;
+
     // --- Getters and Setters ---
 
     @NonNull
@@ -86,7 +90,6 @@ public class TrailEntity {
     public double getCenterLon() { return centerLon; }
     public void setCenterLon(double centerLon) { this.centerLon = centerLon; }
 
-    // Bounding Box Getters/Setters
     public double getMinLat() { return minLat; }
     public void setMinLat(double minLat) { this.minLat = minLat; }
 
@@ -98,4 +101,7 @@ public class TrailEntity {
 
     public double getMaxLon() { return maxLon; }
     public void setMaxLon(double maxLon) { this.maxLon = maxLon; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 }

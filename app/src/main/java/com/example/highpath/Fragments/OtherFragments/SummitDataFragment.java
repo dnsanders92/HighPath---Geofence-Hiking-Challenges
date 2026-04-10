@@ -1,5 +1,7 @@
 package com.example.highpath.Fragments.OtherFragments;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
@@ -25,8 +27,7 @@ public class SummitDataFragment extends Fragment {
     private TextView longitude;
     private TextView description;
 
-    public SummitDataFragment() {
-    }
+    public SummitDataFragment() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,8 +52,6 @@ public class SummitDataFragment extends Fragment {
         longitude = view.findViewById(R.id.summitLongitude);
         description = view.findViewById(R.id.summitDescription);
 
-        summitImage.setImageResource(R.drawable.errigal);
-
         loadSummitDetails();
 
         return view;
@@ -72,6 +71,15 @@ public class SummitDataFragment extends Fragment {
                 latitude.setText(String.valueOf(summit.getLatitude()));
                 longitude.setText(String.valueOf(summit.getLongitude()));
                 description.setText(summit.getDescription());
+
+                // --- NEW: Load summit image from DB ---
+                byte[] imageBytes = summit.getSummitImage();
+                if (imageBytes != null && imageBytes.length > 0) {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                    summitImage.setImageBitmap(bitmap);
+                } else {
+                    summitImage.setImageResource(R.drawable.errigal); // fallback
+                }
 
                 loadWeatherFragment(summit.getLatitude(), summit.getLongitude());
             });

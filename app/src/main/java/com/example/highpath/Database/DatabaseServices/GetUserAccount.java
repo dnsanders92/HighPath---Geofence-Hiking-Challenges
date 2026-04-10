@@ -7,7 +7,6 @@ import android.os.Looper;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.highpath.Database.Daos.UserDao;
 import com.example.highpath.Database.Entities.UserEntity;
 import com.example.highpath.Database.LocalDatabase;
 
@@ -28,7 +27,6 @@ public class GetUserAccount {
             public void run() {
 
                 LocalDatabase db = LocalDatabase.getInstance(context);
-
                 UserEntity user = db.userDao().getUser();
 
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -38,17 +36,23 @@ public class GetUserAccount {
 
                         if (user == null) return;
 
-                        // Name
-                        userName.setText(user.firstName + " " + user.surname);
+                        // Name - String concatenation handles nulls by showing "null",
+                        // but a ternary check is cleaner
+                        String first = user.firstName != null ? user.firstName : "";
+                        String last = user.surname != null ? user.surname : "";
+                        userName.setText(first + " " + last);
 
-                        // Stats
-                        totalDistance.setText(user.totalDistanceKm + " km");
-                        totalElevation.setText(user.totalElevationM + " m");
-                        completedActivities.setText(String.valueOf(user.completedActivities + "  ⛰️"));
-                        completedChallenges.setText(String.valueOf(user.completedChallenges + "  \uD83C\uDFC6"));
+                        // Stats - Using helper to prevent NullPointerException and handle the display
+                        totalDistance.setText(getSafeInt(user.totalDistanceKm) + " km");
+                        totalElevation.setText(getSafeInt(user.totalElevationM) + " m");
+
+                        // Fixed: Removed String.valueOf() wrap around the emoji which was causing redundant calls
+                        completedActivities.setText(getSafeInt(user.completedActivities) + "  ⛰️");
+                        completedChallenges.setText(getSafeInt(user.completedChallenges) + "  \uD83C\uDFC6");
+
+                        // Time - Using the updated formatTime which now accepts 'Long' correctly
                         totalTimeOutside.setText(formatTime(user.totalTimeOutsideSeconds));
                         totalTimeMoving.setText(formatTime(user.totalMovingTimeSeconds));
-
 
                         if (user.bannerImage != null) {
                             bannerImage.setImageBitmap(
@@ -66,16 +70,24 @@ public class GetUserAccount {
             }
         });
     }
-    private static String formatTime(int totalSeconds) {
 
-        int minutes = totalSeconds / 60;
-        int hours = minutes / 60;
-        int days = hours / 24;
-
-        minutes = minutes % 60;
-        hours = hours % 24;
-
-        return days + "d " + hours + "h " + minutes + "m";
+    // Helper to safely handle Integer objects from the database
+    private static int getSafeInt(Integer value) {
+        return value != null ? value : 0;
     }
 
+    // Updated to accept Long (wrapper) or long (primitive)
+    private static String formatTime(Long totalSeconds) {
+        if (totalSeconds == null || totalSeconds <= 0) return "0m";
+
+        long seconds = totalSeconds;
+        long hours = seconds / 3600;
+        long minutes = (seconds % 3600) / 60;
+
+        if (hours > 0) {
+            return hours + "h " + minutes + "m";
+        } else {
+            return minutes + "m";
+        }
+    }
 }

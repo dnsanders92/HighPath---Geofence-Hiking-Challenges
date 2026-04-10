@@ -35,8 +35,8 @@ public class AddUserAccount {
                 user.totalElevationM = 0;
                 user.completedActivities = 0;
                 user.completedChallenges = 0;
-                user.totalTimeOutsideSeconds = 0;
-                user.totalMovingTimeSeconds = 0;
+                user.totalTimeOutsideSeconds = 0L;
+                user.totalMovingTimeSeconds = 0L;
 
                 // Loads default images from drawables and converts to byte[], images store as blobs
                 user.profileImage = drawableToBytes(context, R.drawable.default_profile_image);

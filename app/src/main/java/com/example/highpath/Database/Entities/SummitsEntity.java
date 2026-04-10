@@ -35,6 +35,12 @@ public class SummitsEntity {
     @ColumnInfo(name = "description")
     private String description;
 
+    // New field for the image
+    @ColumnInfo(name = "summit_image", typeAffinity = ColumnInfo.BLOB)
+    private byte[] summitImage;
+
+    // --- Getters and Setters ---
+
     public int getSummitId() {
         return summitId;
     }
@@ -105,5 +111,14 @@ public class SummitsEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    // New Getter and Setter for the image
+    public byte[] getSummitImage() {
+        return summitImage;
+    }
+
+    public void setSummitImage(byte[] summitImage) {
+        this.summitImage = summitImage;
     }
 }

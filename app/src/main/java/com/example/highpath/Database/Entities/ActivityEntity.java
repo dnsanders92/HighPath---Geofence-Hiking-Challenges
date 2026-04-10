@@ -10,18 +10,41 @@ public class ActivityEntity {
 
     @PrimaryKey
     @NonNull
-    @ColumnInfo(name = "activity_id") private String activityId;
-    @ColumnInfo(name = "activity_name") private String activityName;
-    @ColumnInfo(name = "distance") private double distance;
-    @ColumnInfo(name = "elevation_gain") private double elevationGain;
-    @ColumnInfo(name = "elevation_loss") private double elevationLoss;
-    @ColumnInfo(name = "average_pace") private double averagePace;
-    @ColumnInfo(name = "moving_time") private long movingTime;
-    @ColumnInfo(name = "actual_time") private long actualTime;
-    @ColumnInfo(name = "calories") private double calories;
-    @ColumnInfo(name = "gpx_file_path") private String gpxFilePath;
-    @ColumnInfo(name = "timestamp") private long timestamp;
-    @ColumnInfo(name = "is_challenge") private boolean isChallenge;
+    @ColumnInfo(name = "activity_id")
+    private String activityId;
+
+    @ColumnInfo(name = "activity_name")
+    private String activityName;
+
+    @ColumnInfo(name = "distance")
+    private Double distance;
+
+    @ColumnInfo(name = "elevation_gain")
+    private Double elevationGain;
+
+    @ColumnInfo(name = "elevation_loss")
+    private Double elevationLoss;
+
+    @ColumnInfo(name = "average_pace")
+    private Double averagePace;
+
+    @ColumnInfo(name = "moving_time")
+    private Long movingTime;
+
+    @ColumnInfo(name = "actual_time")
+    private Long actualTime;
+
+    @ColumnInfo(name = "calories")
+    private Double calories;
+
+    @ColumnInfo(name = "gpx_file_path")
+    private String gpxFilePath;
+
+    @ColumnInfo(name = "timestamp")
+    private Long timestamp;
+
+    @ColumnInfo(name = "is_challenge")
+    private Boolean isChallenge;
 
     @NonNull
     public String getActivityId() {
@@ -40,59 +63,59 @@ public class ActivityEntity {
         this.activityName = activityName;
     }
 
-    public double getDistance() {
+    public Double getDistance() {
         return distance;
     }
 
-    public void setDistance(double distance) {
+    public void setDistance(Double distance) {
         this.distance = distance;
     }
 
-    public double getElevationGain() {
+    public Double getElevationGain() {
         return elevationGain;
     }
 
-    public void setElevationGain(double elevationGain) {
+    public void setElevationGain(Double elevationGain) {
         this.elevationGain = elevationGain;
     }
 
-    public double getElevationLoss() {
+    public Double getElevationLoss() {
         return elevationLoss;
     }
 
-    public void setElevationLoss(double elevationLoss) {
+    public void setElevationLoss(Double elevationLoss) {
         this.elevationLoss = elevationLoss;
     }
 
-    public double getAveragePace() {
+    public Double getAveragePace() {
         return averagePace;
     }
 
-    public void setAveragePace(double averagePace) {
+    public void setAveragePace(Double averagePace) {
         this.averagePace = averagePace;
     }
 
-    public long getMovingTime() {
+    public Long getMovingTime() {
         return movingTime;
     }
 
-    public void setMovingTime(long movingTime) {
+    public void setMovingTime(Long movingTime) {
         this.movingTime = movingTime;
     }
 
-    public long getActualTime() {
+    public Long getActualTime() {
         return actualTime;
     }
 
-    public void setActualTime(long actualTime) {
+    public void setActualTime(Long actualTime) {
         this.actualTime = actualTime;
     }
 
-    public double getCalories() {
+    public Double getCalories() {
         return calories;
     }
 
-    public void setCalories(double calories) {
+    public void setCalories(Double calories) {
         this.calories = calories;
     }
 
@@ -104,19 +127,20 @@ public class ActivityEntity {
         this.gpxFilePath = gpxFilePath;
     }
 
-    public long getTimestamp() {
+    public Long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(long timestamp) {
+    public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
     }
 
-    public boolean isChallenge() {
+    // Fixed naming to resolve "private access" errors
+    public Boolean getIsChallenge() {
         return isChallenge;
     }
 
-    public void setChallenge(boolean challenge) {
-        isChallenge = challenge;
+    public void setIsChallenge(Boolean isChallenge) {
+        this.isChallenge = isChallenge;
     }
 }

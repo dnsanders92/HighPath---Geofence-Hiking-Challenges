@@ -62,15 +62,27 @@ public class ActivityAdapter extends BaseAdapter {
 
         ActivityEntity a = activities.get(position);
 
-        holder.activityName.setText(a.getActivityName());
-        holder.activityDate.setText(formatDate(a.getTimestamp()));
-        holder.activityDistance.setText(String.format(Locale.UK, "%.2f km", a.getDistance()));
-        holder.activityElevation.setText((int)a.getElevationGain() + " m");
-        holder.activityTime.setText(formatTime(a.getActualTime()));
-        holder.activityPace.setText(formatPace(a.getAveragePace()));
+        holder.activityName.setText(a.getActivityName() != null ? a.getActivityName() : "Unnamed Activity");
+
+        // Safety checks for Long and Double wrapper objects
+        long timestamp = a.getTimestamp() != null ? a.getTimestamp() : 0L;
+        holder.activityDate.setText(formatDate(timestamp));
+
+        double distance = a.getDistance() != null ? a.getDistance() : 0.0;
+        holder.activityDistance.setText(String.format(Locale.UK, "%.2f km", distance));
+
+        int elevation = a.getElevationGain() != null ? a.getElevationGain().intValue() : 0;
+        holder.activityElevation.setText(elevation + " m");
+
+        long actualTime = a.getActualTime() != null ? a.getActualTime() : 0L;
+        holder.activityTime.setText(formatTime(actualTime));
+
+        double pace = a.getAveragePace() != null ? a.getAveragePace() : 0.0;
+        holder.activityPace.setText(formatPace(pace));
 
         if (holder.trophyBadge != null) {
-            if (a.isChallenge()) {
+            // Updated to use the correct getter name and handle nullability
+            if (a.getIsChallenge() != null && a.getIsChallenge()) {
                 holder.trophyBadge.setVisibility(View.VISIBLE);
             } else {
                 holder.trophyBadge.setVisibility(View.GONE);
@@ -81,11 +93,13 @@ public class ActivityAdapter extends BaseAdapter {
     }
 
     private String formatDate(long timestamp) {
+        if (timestamp == 0) return "--";
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.UK);
         return sdf.format(new Date(timestamp));
     }
 
     private String formatTime(long seconds) {
+        if (seconds <= 0) return "--";
         long hours   = seconds / 3600;
         long minutes = (seconds % 3600) / 60;
         if (hours > 0) {

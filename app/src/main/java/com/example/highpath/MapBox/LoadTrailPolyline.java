@@ -27,9 +27,9 @@ public class LoadTrailPolyline {
                 .build();
         trailSource.bindTo(style);
 
-        // 2. Define and Bind the Layer
+        // 2. Define and Bind the Layer (sky blue color)
         LineLayer trailLayer = new LineLayer(LAYER_ID, SOURCE_ID)
-                .lineColor(Color.parseColor("#FF5722")) // Highpath Orange
+                .lineColor(Color.parseColor("#87CEEB")) // Sky Blue
                 .lineWidth(6.0)
                 .lineCap(LineCap.ROUND)
                 .lineJoin(LineJoin.ROUND);
