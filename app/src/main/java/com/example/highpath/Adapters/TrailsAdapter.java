@@ -1,6 +1,8 @@
 package com.example.highpath.Adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,15 +35,23 @@ public class TrailsAdapter extends ArrayAdapter<TrailEntity> {
 
         TrailEntity trail = getItem(position);
 
-        ImageView trailImage    = convertView.findViewById(R.id.trailImage);
-        TextView trailName      = convertView.findViewById(R.id.trailName);
-        TextView trailRegion    = convertView.findViewById(R.id.trailRegion);
-        TextView trailDistance  = convertView.findViewById(R.id.trailDistance);
-        TextView trailAscent    = convertView.findViewById(R.id.trailAscent);
+        ImageView trailImage     = convertView.findViewById(R.id.trailImage);
+        TextView trailName       = convertView.findViewById(R.id.trailName);
+        TextView trailRegion     = convertView.findViewById(R.id.trailRegion);
+        TextView trailDistance   = convertView.findViewById(R.id.trailDistance);
+        TextView trailAscent     = convertView.findViewById(R.id.trailAscent);
         TextView trailDifficulty = convertView.findViewById(R.id.trailDifficulty);
 
         if (trail != null) {
-            trailImage.setImageResource(R.drawable.errigal);
+            // Load thumbnail from DB, fall back to drawable if null
+            byte[] thumbnailBytes = trail.getPreviewImage();
+            if (thumbnailBytes != null && thumbnailBytes.length > 0) {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(thumbnailBytes, 0, thumbnailBytes.length);
+                trailImage.setImageBitmap(bitmap);
+            } else {
+                trailImage.setImageResource(R.drawable.errigal);
+            }
+
             trailName.setText(trail.getName());
             trailRegion.setText(trail.getRegion());
             trailDistance.setText(String.format(Locale.UK, "%.1f km", trail.getDistanceKm()));

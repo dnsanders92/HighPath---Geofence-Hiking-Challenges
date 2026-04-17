@@ -22,6 +22,7 @@ import com.example.highpath.Runnables.TimeRunnable;
 import com.example.highpath.Runnables.MetricsRunnable;
 import com.example.highpath.Utilities.GPX.GPXParser;
 import com.example.highpath.Utilities.GPX.GpxBuilder;
+import com.example.highpath.Utilities.GPX.LiveTrackManager;
 import com.example.highpath.Utilities.TrailData;
 
 import java.io.IOException;
@@ -148,6 +149,7 @@ public class RecordingService extends Service {
                 // 2. Hand off the file path to the Builder.
                 // The Builder will handle parsing on a background thread.
                 new ActivityBuilder().insertActivity(getApplicationContext(), fullPath);
+                LiveTrackManager.getInstance().clear();
 
             } catch (IOException e) {
                 Log.e(TAG, "Error closing GPX", e);

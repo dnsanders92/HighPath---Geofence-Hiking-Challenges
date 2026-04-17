@@ -2,6 +2,8 @@ package com.example.highpath.Fragments.NavigationFragments;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,9 +16,12 @@ import android.widget.Button;
 
 import com.example.highpath.Activities.MainActivity;
 import com.example.highpath.Fragments.OtherFragments.RecordingPanelFragment;
+import com.example.highpath.MapBox.DrawLivePolyline;
 import com.example.highpath.MapBox.LoadMapBox;
 import com.example.highpath.MapBox.LoadTrailPolyline;
 import com.example.highpath.R;
+import com.example.highpath.Services.RecordingService;
+import com.example.highpath.Utilities.GPX.LiveTrackManager;
 import com.example.highpath.Utilities.TrailData;
 
 import com.mapbox.geojson.LineString;
@@ -32,6 +37,33 @@ import java.util.List;
 public class RecordFragment extends Fragment {
 
     private MapView mapView;
+    private DrawLivePolyline drawLivePolyline;
+    private final Handler liveHandler = new Handler(Looper.getMainLooper());
+
+    private final Runnable liveUpdateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!isAdded() || mapView == null) return;
+
+            // Update polyline
+            LiveTrackManager manager = LiveTrackManager.getInstance();
+            if (drawLivePolyline != null && manager.hasPoints()) {
+                drawLivePolyline.update(manager.getLatitudes(), manager.getLongitudes());
+            }
+
+            // Follow user puck
+            if (getActivity() instanceof MainActivity) {
+                MainActivity main = (MainActivity) getActivity();
+                double currentLat = main.getLatitude();
+                double currentLon = main.getLongitude();
+                if (currentLat != 0.0 && currentLon != 0.0) {
+                    new LoadMapBox().centreMap(mapView, currentLat, currentLon);
+                }
+            }
+
+            liveHandler.postDelayed(this, 1000);
+        }
+    };
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -41,30 +73,41 @@ public class RecordFragment extends Fragment {
 
         mapView = view.findViewById(R.id.RecordMapView);
         LoadMapBox mapLoader = new LoadMapBox();
+        drawLivePolyline = new DrawLivePolyline();
 
         Double lat = null;
         Double lon = null;
 
-        // Get current GPS location from MainActivity
         if (getActivity() instanceof MainActivity) {
             MainActivity main = (MainActivity) getActivity();
             lat = main.getLatitude();
             lon = main.getLongitude();
         }
 
-        // If a trail is loaded, center map on trail start instead of GPS
         if (TrailData.hasData()) {
             double startLat = TrailData.latitudes.get(0);
             double startLon = TrailData.longitudes.get(0);
-
             mapLoader.initializeMap(requireContext(), mapView, true, startLat, startLon);
             drawLoadedTrail();
         } else {
-            // No trail → center on user location
             mapLoader.initializeMap(requireContext(), mapView, true, lat, lon);
         }
 
-        // Load bottom recording panel
+        mapView.getMapboxMap().getStyle(style -> {
+            if (style != null) {
+                drawLivePolyline.initialize(style);
+
+                LiveTrackManager manager = LiveTrackManager.getInstance();
+                if (manager.hasPoints()) {
+                    drawLivePolyline.update(manager.getLatitudes(), manager.getLongitudes());
+                }
+
+                if (RecordingService.isRecording) {
+                    liveHandler.post(liveUpdateRunnable);
+                }
+            }
+        });
+
         getChildFragmentManager()
                 .beginTransaction()
                 .replace(R.id.bottom_fragment_container, new RecordingPanelFragment())
@@ -73,7 +116,6 @@ public class RecordFragment extends Fragment {
         return view;
     }
 
-    // Draw the trail stored in TrailData
     private void drawLoadedTrail() {
         if (mapView == null) return;
 
@@ -94,17 +136,14 @@ public class RecordFragment extends Fragment {
 
         LineString lineString = LineString.fromLngLats(points);
 
-        // Draw polyline
         mapView.getMapboxMap().getStyle(style -> {
             LoadTrailPolyline polylineLoader = new LoadTrailPolyline();
             polylineLoader.draw(style, lineString);
         });
 
-        // Zoom camera to fit trail
         zoomToBounds(minLat, maxLat, minLon, maxLon);
     }
 
-    // Camera zoom to fit trail bounds
     private void zoomToBounds(double minLat, double maxLat, double minLon, double maxLon) {
         CoordinateBounds bounds = new CoordinateBounds(
                 Point.fromLngLat(minLon, minLat),
@@ -135,13 +174,13 @@ public class RecordFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        liveHandler.removeCallbacksAndMessages(null);
         if (mapView != null) {
             mapView.onDestroy();
             mapView = null;
         }
     }
 
-    // Called from MainActivity to recenter map
     public void centerMapFromActivity(double lat, double lon) {
         if (mapView != null) {
             new LoadMapBox().centreMap(mapView, lat, lon);

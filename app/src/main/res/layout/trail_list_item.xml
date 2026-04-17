@@ -26,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:src="@drawable/errigal" />
+                android:src="@drawable/placeholder" />
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/trailOverlayCard"
@@ -44,7 +44,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/gpx_track_sample" />
+                    android:src="@drawable/trail_placeholder" />
 
             </com.google.android.material.card.MaterialCardView>
 

@@ -30,10 +30,9 @@
                     android:layout_height="match_parent"
                     android:background="@android:color/darker_gray"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/crough_patrick"
-                    tools:src="@drawable/crough_patrick" />
+                    android:src="@drawable/trail_placeholder"
+                    tools:src="@drawable/trail_placeholder" />
 
-                <!-- Overlay hint -->
                 <TextView
                     android:id="@+id/mapHint"
                     android:layout_width="wrap_content"
@@ -68,7 +67,6 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="16dp">
 
-                <!-- Trail Name -->
                 <TextView
                     android:id="@+id/trailName"
                     android:layout_width="match_parent"
@@ -80,7 +78,6 @@
                     android:letterSpacing="0.05"
                     tools:text="Errigal" />
 
-                <!-- Region + Difficulty on same line -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -239,18 +236,6 @@
 
             </LinearLayout>
 
-            <!-- DESCRIPTION -->
-            <TextView
-                android:id="@+id/trailDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:textColor="#4A4A4A"
-                android:textSize="14sp"
-                android:lineSpacingMultiplier="1.5"
-                android:visibility="gone"
-                tools:text="A stunning ridge walk taking in the summit of Errigal, the highest peak in Donegal." />
-
             <!-- 5-Day Forecast -->
             <TextView
                 android:layout_width="match_parent"
@@ -267,6 +252,27 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:minHeight="100dp" />
+
+            <!-- DESCRIPTION -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Description"
+                android:textColor="#121212"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/trailDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="#4A4A4A"
+                android:textSize="14sp"
+                android:lineSpacingMultiplier="1.5"
+                android:visibility="gone"
+                tools:text="A stunning ridge walk taking in the summit of Errigal, the highest peak in Donegal." />
 
         </LinearLayout>
     </LinearLayout>

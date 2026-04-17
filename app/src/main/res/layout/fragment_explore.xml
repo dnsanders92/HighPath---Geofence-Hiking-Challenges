@@ -8,16 +8,37 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="65dp"
-        android:background="#757575">
+        android:background="#E6E6E6"
+        android:paddingHorizontal="12dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="🏔️ Explore Trails 🏔️"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+        <!-- Search box -->
+        <EditText
+            android:id="@+id/searchTrails"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/sortSpinner"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/rounded_corners_container"
+            android:hint="Search trails..."
+            android:textSize="13sp"
+            android:textColorHint="#B0B0B0"
+            android:textColor="#1A1A1A"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:singleLine="true" />
+
+        <!-- Sort dropdown -->
+        <Spinner
+            android:id="@+id/sortSpinner"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/rounded_corners_container" />
 
     </RelativeLayout>
 

@@ -1,6 +1,7 @@
 package com.example.highpath.Database.Daos;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 
@@ -30,6 +31,9 @@ public interface ActivityDao {
     // Optional: delete all (useful for testing)
     @Query("DELETE FROM activities")
     void deleteAllActivities();
+
+    @Delete
+    void deleteActivity(ActivityEntity activity);
 
     // Longest distance ever recorded
     @Query("SELECT MAX(distance) FROM activities")
