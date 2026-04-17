@@ -12,6 +12,7 @@ public class FiveDayWeatherData {
     public void buildHighLowStrings() {
         HighLowTemps.clear();
         for (int i = 0; i < HighTemps.size(); i++) {
+
             HighLowTemps.add(Math.round(HighTemps.get(i)) + "° / " + Math.round(LowTemps.get(i)) + "°");
         }
     }

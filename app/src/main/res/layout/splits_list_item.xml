@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingHorizontal="14dp"
+    android:paddingVertical="12dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/splitNumber"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:textColor="#B0B0B0" />
+
+    <TextView
+        android:id="@+id/splitPace"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="0:00 /km"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#1A1A1A" />
+
+    <TextView
+        android:id="@+id/splitDistance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1.00 km"
+        android:textSize="13sp"
+        android:textColor="#9E9E9E" />
+
+</LinearLayout>

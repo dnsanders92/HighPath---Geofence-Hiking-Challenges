@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".Fragments.NavigationFragments.ProfileFragment">
 
-    <!-- TOP FRAME: weight 1 -->
+    <!-- TOP FRAME -->
     <FrameLayout
         android:id="@+id/topFrame"
         android:layout_width="0dp"
@@ -23,14 +23,13 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <!-- BOX 1 (banner + circle) -->
+            <!-- Banner + Circle -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="6"
                 android:background="#F2F0F0">
 
-                <!-- Banner behind circle -->
                 <ImageView
                     android:id="@+id/bannerImage"
                     android:layout_width="match_parent"
@@ -38,7 +37,6 @@
                     android:scaleType="centerCrop"
                     android:adjustViewBounds="true" />
 
-                <!-- Circle image anchored to bottom -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -55,10 +53,9 @@
                         app:strokeWidth="5dp" />
 
                 </LinearLayout>
-
             </FrameLayout>
 
-            <!-- BOX 2 -->
+            <!-- Username -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -75,10 +72,9 @@
             </LinearLayout>
 
         </LinearLayout>
-
     </FrameLayout>
 
-    <!-- BOTTOM FRAME: weight 3 -->
+    <!-- BOTTOM FRAME -->
     <FrameLayout
         android:id="@+id/bottomFrame"
         android:layout_width="0dp"
@@ -94,315 +90,310 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            tools:ignore="UselessParent">
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
 
-            <!-- BOX 1 -->
+            <!-- ROW 1: Total Distance + Total Elevation -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="5dp">
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp">
 
-                <!-- LEFT (vertical 1:5) -->
+                <!-- TOTAL DISTANCE -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:backgroundTint="#E6E6E6"
                     android:background="@drawable/rounded_corners_container"
-                    android:layout_marginRight="5dp">
+                    android:backgroundTint="#E6E6E6"
+                    android:layout_marginEnd="5dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:gravity="bottom"
+                        android:text="TOTAL DISTANCE (km)"
+                        android:textSize="11dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="4dp" />
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center_vertical"
-                            android:text="TOTAL DISTANCE (km)"
-                            android:textSize="14dp"
-                            android:layout_marginTop="5dp"
-                            android:layout_marginLeft="10dp"/>
-
-                    </LinearLayout>
-
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/labelTotalDistance"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="2">
-
-                        <TextView
-                            android:id="@+id/labelTotalDistance"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginBottom="20dp"
-                            android:gravity="center_vertical"
-                            android:text="0"
-                            android:textSize="35dp"/>
-
-                    </LinearLayout>
+                        android:layout_weight="2"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginBottom="6dp"
+                        android:gravity="center_vertical"
+                        android:text="0"
+                        android:textSize="30dp" />
 
                 </LinearLayout>
 
-                <!-- RIGHT (vertical 1:5) -->
+                <!-- TOTAL ELEVATION -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:backgroundTint="#E6E6E6"
                     android:background="@drawable/rounded_corners_container"
-                    android:layout_marginLeft="5dp">
+                    android:backgroundTint="#E6E6E6"
+                    android:layout_marginStart="5dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:gravity="bottom"
+                        android:text="TOTAL ELEVATION (m)"
+                        android:textSize="11dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="4dp" />
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center_vertical"
-                            android:text="TOTAL ELEVATION (m)"
-                            android:textSize="14dp"
-                            android:layout_marginTop="5dp"
-                            android:layout_marginLeft="10dp"/>
-
-                    </LinearLayout>
-
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/labelTotalElevation"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="2">
-
-                        <TextView
-                            android:id="@+id/labelTotalElevation"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginBottom="20dp"
-                            android:gravity="center_vertical"
-                            android:text="0"
-                            android:textSize="35dp"/>
-
-                    </LinearLayout>
+                        android:layout_weight="2"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginBottom="6dp"
+                        android:gravity="center_vertical"
+                        android:text="0"
+                        android:textSize="30dp" />
 
                 </LinearLayout>
-
             </LinearLayout>
 
-            <!-- BOX 2 -->
+            <!-- ROW 2: Longest Distance + Most Elevation Gain (MOVED UP) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:background="#F2F0F0">
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp">
 
-                <!-- LEFT (vertical 1:5) -->
+                <!-- LONGEST DISTANCE -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:backgroundTint="#E6E6E6"
                     android:background="@drawable/rounded_corners_container"
-                    android:layout_marginRight="5dp">
+                    android:backgroundTint="#E6E6E6"
+                    android:layout_marginEnd="5dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:gravity="bottom"
+                        android:text="LONGEST DISTANCE (km)"
+                        android:textSize="11dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="4dp" />
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center_vertical"
-                            android:text="COMPLETED ACTIVITIES"
-                            android:textSize="14dp"
-                            android:layout_marginTop="5dp"
-                            android:layout_marginLeft="10dp"/>
-
-                    </LinearLayout>
-
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/labelLongestDistance"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="2">
-
-                        <TextView
-                            android:id="@+id/labelCompletedActivities"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginBottom="20dp"
-                            android:gravity="center_vertical"
-                            android:text="0"
-                            android:textSize="35dp"/>
-
-                    </LinearLayout>
+                        android:layout_weight="2"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginBottom="6dp"
+                        android:gravity="center_vertical"
+                        android:text="0"
+                        android:textSize="30dp" />
 
                 </LinearLayout>
 
-                <!-- RIGHT (vertical 1:5) -->
+                <!-- MOST ELEVATION GAIN -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:backgroundTint="#E6E6E6"
                     android:background="@drawable/rounded_corners_container"
-                    android:layout_marginLeft="5dp">
+                    android:backgroundTint="#E6E6E6"
+                    android:layout_marginStart="5dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:gravity="bottom"
+                        android:text="MOST ELEVATION GAIN (m)"
+                        android:textSize="11dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="4dp" />
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:text="COMPLETED CHALLENGES"
-                            android:gravity="center_vertical"
-                            android:textSize="14dp"
-                            android:layout_marginTop="5dp"
-                            android:layout_marginLeft="10dp"/>
-
-                    </LinearLayout>
-
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/labelMostElevationGain"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="2">
-
-                        <TextView
-                            android:id="@+id/labelCompletedChallenges"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginBottom="20dp"
-                            android:gravity="center_vertical"
-                            android:text="0"
-                            android:textSize="35dp"/>
-
-                    </LinearLayout>
+                        android:layout_weight="2"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginBottom="6dp"
+                        android:gravity="center_vertical"
+                        android:text="0"
+                        android:textSize="30dp" />
 
                 </LinearLayout>
-
             </LinearLayout>
 
-            <!-- BOX 3 -->
+            <!-- ROW 3: Completed Activities + Completed Challenges -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="10dp"
-                android:backgroundTint="#E6E6E6"
-                android:background="@drawable/rounded_corners_container">
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp">
 
-                <!-- LEFT (vertical 1:5) -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:layout_marginRight="4dp">
+                    android:background="@drawable/rounded_corners_container"
+                    android:backgroundTint="#E6E6E6"
+                    android:layout_marginEnd="5dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:gravity="bottom"
+                        android:text="COMPLETED ACTIVITIES"
+                        android:textSize="11dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="4dp" />
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center_vertical"
-                            android:text="TOTAL TIME OUTSIDE"
-                            android:textSize="14dp"
-                            android:layout_marginTop="5dp"
-                            android:layout_marginLeft="10dp"/>
-
-                    </LinearLayout>
-
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/labelCompletedActivities"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="2">
-
-                        <TextView
-                            android:id="@+id/labelTimeOutside"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginBottom="20dp"
-                            android:gravity="center_vertical"
-                            android:text="00:00:00"
-                            android:textSize="30dp"/>
-
-                    </LinearLayout>
+                        android:layout_weight="2"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginBottom="6dp"
+                        android:gravity="center_vertical"
+                        android:text="0"
+                        android:textSize="30dp" />
 
                 </LinearLayout>
 
-                <!-- RIGHT (vertical 1:5) -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:layout_marginLeft="5dp">
+                    android:background="@drawable/rounded_corners_container"
+                    android:backgroundTint="#E6E6E6"
+                    android:layout_marginStart="5dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="1">
+                        android:layout_weight="1"
+                        android:gravity="bottom"
+                        android:text="COMPLETED CHALLENGES"
+                        android:textSize="11dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="4dp" />
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center_vertical"
-                            android:text="TOTAL MOVING TIME"
-                            android:textSize="14dp"
-                            android:layout_marginTop="5dp"
-                            android:layout_marginLeft="10dp"/>
-
-                    </LinearLayout>
-
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/labelCompletedChallenges"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="2">
+                        android:layout_weight="2"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginBottom="6dp"
+                        android:gravity="center_vertical"
+                        android:text="0"
+                        android:textSize="30dp" />
 
-                        <TextView
-                            android:id="@+id/labelMovingTime"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginBottom="20dp"
-                            android:gravity="center_vertical"
-                            android:text="00:00:00"
-                            android:textSize="30dp"/>
+                </LinearLayout>
+            </LinearLayout>
 
-                    </LinearLayout>
+            <!-- ROW 4: Total Time Outside + Total Moving Time -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:background="@drawable/rounded_corners_container"
+                android:backgroundTint="#E6E6E6">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="4dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="bottom"
+                        android:text="TOTAL TIME OUTSIDE"
+                        android:textSize="11dp"
+                        android:layout_marginStart="10dp" />
+
+                    <TextView
+                        android:id="@+id/labelTimeOutside"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="2"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginBottom="6dp"
+                        android:gravity="center_vertical"
+                        android:text="00:00:00"
+                        android:textSize="25dp" />
 
                 </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="5dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="bottom"
+                        android:text="TOTAL MOVING TIME"
+                        android:textSize="11dp"
+                        android:layout_marginStart="10dp" />
+
+                    <TextView
+                        android:id="@+id/labelMovingTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="2"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginBottom="6dp"
+                        android:gravity="center_vertical"
+                        android:text="00:00:00"
+                        android:textSize="25dp" />
+
+                </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>
-
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

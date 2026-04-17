@@ -2,11 +2,13 @@ package com.example.highpath.Database.DatabaseServices;
 
 import android.content.Context;
 import android.util.Log;
+
 import com.example.highpath.Calculations.CalculateFinalMetrics;
 import com.example.highpath.Database.LocalDatabase;
 import com.example.highpath.Database.Daos.ActivityDao;
 import com.example.highpath.Database.Daos.UserDao;
 import com.example.highpath.Database.Entities.ActivityEntity;
+import com.example.highpath.Database.Entities.SplitEntity;
 import com.example.highpath.Database.Entities.UserEntity;
 import com.example.highpath.Utilities.SetActivityName;
 
@@ -18,7 +20,6 @@ public class ActivityBuilder {
         new Thread(() -> {
 
             CalculateFinalMetrics metrics = new CalculateFinalMetrics();
-
             metrics.calculateMetrics(context, fullPath);
             SetActivityName setActivityName = new SetActivityName();
 
@@ -43,6 +44,15 @@ public class ActivityBuilder {
                 activity.setCalories(1230.0);
 
                 activityDao.insertActivity(activity);
+
+                // Save splits
+                if (!metrics.splits.isEmpty()) {
+                    for (SplitEntity split : metrics.splits) {
+                        split.setActivityId(activity.getActivityId());
+                    }
+                    db.splitDao().insertSplits(metrics.splits);
+                    Log.d(TAG, "Splits saved: " + metrics.splits.size());
+                }
 
                 user.setTotalDistanceKm(user.getTotalDistanceKm() + (int) Math.round(metrics.totalDistanceKM));
                 user.setTotalElevationM(user.getTotalElevationM() + (int) Math.round(metrics.totalElevationGainM));

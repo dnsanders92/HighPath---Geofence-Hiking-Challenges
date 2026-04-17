@@ -30,4 +30,13 @@ public interface ActivityDao {
     // Optional: delete all (useful for testing)
     @Query("DELETE FROM activities")
     void deleteAllActivities();
+
+    // Longest distance ever recorded
+    @Query("SELECT MAX(distance) FROM activities")
+    Double getLongestDistance();
+
+    // Highest elevation gain ever recorded
+    @Query("SELECT MAX(elevation_gain) FROM activities")
+    Double getHighestElevationGain();
+
 }

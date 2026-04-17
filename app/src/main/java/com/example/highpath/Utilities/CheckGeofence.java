@@ -15,57 +15,57 @@ public class CheckGeofence {
 
     private final double geofenceRadius = 15.0;
 
+    // Run this entire method off the main thread
     public void checkGeofence(Context context, GPXData gpxData) {
         if (context == null || gpxData == null) return;
 
-        LocalDatabase db = LocalDatabase.getInstance(context);
-        List<SummitsEntity> allSummits = db.summitsDao().getAllSummits();
+        new Thread(() -> {
+            LocalDatabase db = LocalDatabase.getInstance(context);
+            List<SummitsEntity> allSummits = db.summitsDao().getAllSummits();
 
-        if (allSummits == null) return;
+            if (allSummits == null || allSummits.isEmpty()) return;
 
-        for (int i = 0; i < gpxData.latitudes.size(); i++) {
-            for (int j = 0; j < allSummits.size(); j++) {
+            for (int i = 0; i < gpxData.latitudes.size(); i++) {
+                for (SummitsEntity summit : allSummits) {
 
-                SummitsEntity summit = allSummits.get(j);
+                    // Skip already-completed summits early
+                    if (summit.isCompleted()) continue;
 
-                double distance = CalculateDistance.equirectangular(
-                        gpxData.latitudes.get(i),
-                        gpxData.longitudes.get(i),
-                        summit.getLatitude(),
-                        summit.getLongitude());
+                    double distance = CalculateDistance.equirectangular(
+                            gpxData.latitudes.get(i),
+                            gpxData.longitudes.get(i),
+                            summit.getLatitude(),
+                            summit.getLongitude());
 
-                if (distance <= geofenceRadius) {
-                    updateDatabase(context, summit);
+                    if (distance <= geofenceRadius) {
+                        // Mark completed on the object immediately to prevent
+                        // duplicate processing by later loop iterations
+                        summit.setCompleted(true);
+                        updateDatabase(context, summit);
 
-                    if (SetActivityName.summitName == null) {
-                        SetActivityName.summitName = summit.getSummitName();
-                    }
-                }
-            }
-        }
-    }
-
-    private void updateDatabase(Context context, SummitsEntity s) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                LocalDatabase db = LocalDatabase.getInstance(context);
-
-                if (s != null && !s.isCompleted()) {
-                    s.setCompleted(true);
-                    db.summitsDao().updateSummit(s);
-
-                    ChallengesEntity challenge = db.challengesDao().getChallengeByRegion(s.getRegion());
-                    if (challenge != null) {
-                        challenge.setCompletedSummits(challenge.getCompletedSummits() + 1);
-                        if (challenge.getCompletedSummits() >= challenge.getTotalSummits()) {
-                            challenge.setCompleted(true);
+                        if (SetActivityName.summitName == null) {
+                            SetActivityName.summitName = summit.getSummitName();
                         }
-                        db.challengesDao().updateChallenge(challenge);
-                        Log.d("GEOFENCE", "Updated " + challenge.getChallengeName());
                     }
                 }
             }
         }).start();
+    }
+
+    private void updateDatabase(Context context, SummitsEntity s) {
+        // Already running on a background thread — no need to nest another Thread
+        LocalDatabase db = LocalDatabase.getInstance(context);
+
+        db.summitsDao().updateSummit(s);
+
+        ChallengesEntity challenge = db.challengesDao().getChallengeByRegion(s.getRegion());
+        if (challenge != null) {
+            challenge.setCompletedSummits(challenge.getCompletedSummits() + 1);
+            if (challenge.getCompletedSummits() >= challenge.getTotalSummits()) {
+                challenge.setCompleted(true);
+            }
+            db.challengesDao().updateChallenge(challenge);
+            Log.d("GEOFENCE", "Updated challenge: " + challenge.getChallengeName());
+        }
     }
 }

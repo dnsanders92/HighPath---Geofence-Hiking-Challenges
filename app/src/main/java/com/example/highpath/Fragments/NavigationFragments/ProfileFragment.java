@@ -12,27 +12,27 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.highpath.Database.DatabaseServices.AddUserAccount;
 import com.example.highpath.Database.DatabaseServices.GetUserAccount;
 import com.example.highpath.R;
 
 public class ProfileFragment extends Fragment {
 
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ImageView bannerImage = view.findViewById(R.id.bannerImage);
+        ImageView bannerImage  = view.findViewById(R.id.bannerImage);
         ImageView profileImage = view.findViewById(R.id.profileImage);
 
-        TextView userName = view.findViewById(R.id.labelUserName);
-        TextView totalDistance = view.findViewById(R.id.labelTotalDistance);
-        TextView totalElevation = view.findViewById(R.id.labelTotalElevation);
-        TextView completedActivities = view.findViewById(R.id.labelCompletedActivities);
-        TextView completedChallenges = view.findViewById(R.id.labelCompletedChallenges);
-        TextView totalTimeOutside = view.findViewById(R.id.labelTimeOutside);
-        TextView totalTimeMoving = view.findViewById(R.id.labelMovingTime);
+        TextView userName             = view.findViewById(R.id.labelUserName);
+        TextView totalDistance        = view.findViewById(R.id.labelTotalDistance);
+        TextView totalElevation       = view.findViewById(R.id.labelTotalElevation);
+        TextView completedActivities  = view.findViewById(R.id.labelCompletedActivities);
+        TextView completedChallenges  = view.findViewById(R.id.labelCompletedChallenges);
+        TextView totalTimeOutside     = view.findViewById(R.id.labelTimeOutside);
+        TextView totalTimeMoving      = view.findViewById(R.id.labelMovingTime);
+        TextView longestDistance      = view.findViewById(R.id.labelLongestDistance);
+        TextView mostElevationGain    = view.findViewById(R.id.labelMostElevationGain);
 
         GetUserAccount.getUser(
                 requireContext(),
@@ -46,13 +46,35 @@ public class ProfileFragment extends Fragment {
                 totalTimeOutside,
                 totalTimeMoving
         );
-    }
 
+        Thread statsThread = new Thread(() -> {
+            // Get database + DAO
+            com.example.highpath.Database.LocalDatabase db =
+                    com.example.highpath.Database.LocalDatabase.getInstance(requireContext());
+
+            Double longest = db.activityDao().getLongestDistance();
+            Double highest = db.activityDao().getHighestElevationGain();
+
+            // Avoid nulls
+            if (longest == null) longest = 0.0;
+            if (highest == null) highest = 0.0;
+
+            Double finalLongest = longest;
+            Double finalHighest = highest;
+
+            requireActivity().runOnUiThread(() -> {
+                longestDistance.setText(String.format("%.2f km", finalLongest));
+                mostElevationGain.setText(String.format("%.0f m", finalHighest));
+            });
+        });
+
+        statsThread.start();
+
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 }

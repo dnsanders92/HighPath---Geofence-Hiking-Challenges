@@ -33,4 +33,11 @@ public interface UserDao {
 
     @Query("SELECT user_id FROM user LIMIT 1")
     int getUserId();
+
+    // Cross Table Queries
+    @Query("SELECT MAX(distance) FROM activities")
+    Double getLongestDistance();
+
+    @Query("SELECT MAX(elevation_gain) FROM activities")
+    Double getHighestElevationGain();
 }
