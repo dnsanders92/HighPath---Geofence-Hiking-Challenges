@@ -1,4 +1,4 @@
-package com.example.highpath.Utilities;
+package com.example.highpath.Models;
 
 import java.util.ArrayList;
 import java.util.List;

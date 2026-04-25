@@ -3,28 +3,34 @@ package com.example.highpath.Fragments.OtherFragments;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.example.highpath.Adapters.SummitAdapter;
+import com.example.highpath.Database.Entities.ChallengeItemEntity;
 import com.example.highpath.Database.LocalDatabase;
 import com.example.highpath.Database.Entities.ChallengesEntity;
 import com.example.highpath.Database.Entities.SummitsEntity;
 import com.example.highpath.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ChallengeSummaryFragment extends Fragment {
 
     private int challengeId;
     private ImageView challengeImage;
-    private TextView challengeName, challengeDescription, summitsCount;
+    private TextView challengeName, challengeDescription, summitsCount, progressPercent;
+    private ProgressBar summitProgressBar;
     private ListView summitList;
 
     @Override
@@ -39,11 +45,13 @@ public class ChallengeSummaryFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_challenge_summary, container, false);
 
-        challengeImage = view.findViewById(R.id.challengeImage);
-        challengeName = view.findViewById(R.id.challengeName);
+        challengeImage       = view.findViewById(R.id.challengeImage);
+        challengeName        = view.findViewById(R.id.challengeName);
         challengeDescription = view.findViewById(R.id.challengeDescription);
-        summitsCount = view.findViewById(R.id.summitsCount);
-        summitList = view.findViewById(R.id.summitList);
+        summitsCount         = view.findViewById(R.id.summitsCount);
+        progressPercent      = view.findViewById(R.id.progressPercent);
+        summitProgressBar    = view.findViewById(R.id.summitProgressBar);
+        summitList           = view.findViewById(R.id.summitList);
 
         loadChallengeDetails();
         return view;
@@ -55,7 +63,28 @@ public class ChallengeSummaryFragment extends Fragment {
             ChallengesEntity challenge = db.challengesDao().getChallengeById(challengeId);
 
             if (challenge != null) {
-                List<SummitsEntity> summits = db.summitsDao().getSummitsByRegion(challenge.getRegion());
+
+                // Load items from challenge_items table
+                List<ChallengeItemEntity> items = db.challengeItemDao().getItemsForChallenge(challengeId);
+
+                // For each item that has a summit_id, load the SummitsEntity
+                List<SummitsEntity> summits = new ArrayList<>();
+                for (ChallengeItemEntity item : items) {
+                    if (item.getSummitId() != null) {
+                        SummitsEntity summit = db.summitsDao().getSummitById(item.getSummitId());
+                        if (summit != null) {
+                            // Override the summit's completed flag with the challenge item's flag
+                            // so completion is per-challenge not global
+                            summit.setCompleted(item.isCompleted());
+                            summits.add(summit);
+                        }
+                    }
+                }
+
+                // Calculate progress from challenge_items directly
+                int total = items.size();
+                int completed = db.challengeItemDao().getCompletedCountForChallenge(challengeId);
+                int percent = (total > 0) ? (int) ((completed / (float) total) * 100) : 0;
 
                 Bitmap bitmap = null;
                 if (challenge.getChallengeThumbnail() != null) {
@@ -64,20 +93,26 @@ public class ChallengeSummaryFragment extends Fragment {
                 }
 
                 final Bitmap finalBitmap = bitmap;
+                final List<SummitsEntity> finalSummits = summits;
+                final int finalCompleted = completed;
+                final int finalTotal = total;
+                final int finalPercent = percent;
 
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
                         if (isAdded()) {
                             challengeName.setText(challenge.getChallengeName());
                             challengeDescription.setText(challenge.getLongDescription());
-                            String progress = challenge.getCompletedSummits() + " / " + challenge.getTotalSummits() + " Summits";
-                            summitsCount.setText(progress);
+
+                            summitsCount.setText(finalCompleted + " / " + finalTotal + " SUMMITS");
+                            summitProgressBar.setProgress(finalPercent);
+                            progressPercent.setText(finalPercent + "%");
 
                             if (finalBitmap != null) {
                                 challengeImage.setImageBitmap(finalBitmap);
                             }
 
-                            setupListView(summits);
+                            setupListView(finalSummits);
                         }
                     });
                 }

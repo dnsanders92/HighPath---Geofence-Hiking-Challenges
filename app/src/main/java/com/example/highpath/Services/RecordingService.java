@@ -23,7 +23,6 @@ import com.example.highpath.Runnables.MetricsRunnable;
 import com.example.highpath.Utilities.GPX.GPXParser;
 import com.example.highpath.Utilities.GPX.GpxBuilder;
 import com.example.highpath.Utilities.GPX.LiveTrackManager;
-import com.example.highpath.Utilities.TrailData;
 
 import java.io.IOException;
 

@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.example.highpath.Calculations.CalculateTime;
-import com.example.highpath.Utilities.GPX.GPXData;
+import com.example.highpath.Models.GPXData;
 import com.example.highpath.Utilities.GPX.GPXParser;
 
 public class CalculateTimesTest {

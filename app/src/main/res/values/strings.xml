@@ -3,4 +3,6 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="open_weather_api_key">236908b3196ed5091106391e27eca5c9</string>
+    <string name="supabase_project_id">uqyjsxpeyvttrhbafwtr</string>
+    <string name="supabase_api_key">sb_publishable_h1iS6gwLEKFdYNCa-4mezw_OES5enzq</string>
 </resources>

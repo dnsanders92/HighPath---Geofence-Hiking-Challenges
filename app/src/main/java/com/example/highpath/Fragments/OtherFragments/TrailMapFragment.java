@@ -18,7 +18,7 @@ import com.example.highpath.Fragments.NavigationFragments.RecordFragment;
 import com.example.highpath.MapBox.LoadMapBox;
 import com.example.highpath.MapBox.LoadTrailPolyline; // New Import
 import com.example.highpath.R;
-import com.example.highpath.Utilities.TrailData;
+import com.example.highpath.Models.TrailData;
 
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;

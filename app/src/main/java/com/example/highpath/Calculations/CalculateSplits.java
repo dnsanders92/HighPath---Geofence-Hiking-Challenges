@@ -1,7 +1,7 @@
 package com.example.highpath.Calculations;
 
 import com.example.highpath.Database.Entities.SplitEntity;
-import com.example.highpath.Utilities.GPX.GPXData;
+import com.example.highpath.Models.GPXData;
 
 import java.util.ArrayList;
 import java.util.List;

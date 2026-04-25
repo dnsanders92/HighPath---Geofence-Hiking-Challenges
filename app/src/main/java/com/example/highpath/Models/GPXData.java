@@ -1,4 +1,4 @@
-package com.example.highpath.Utilities.GPX;
+package com.example.highpath.Models;
 
 import java.util.List;
 

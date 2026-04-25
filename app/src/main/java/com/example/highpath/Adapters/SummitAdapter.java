@@ -1,17 +1,22 @@
 package com.example.highpath.Adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import com.example.highpath.Database.Entities.SummitsEntity;
 import com.example.highpath.R;
+
 import java.util.List;
 
 public class SummitAdapter extends BaseAdapter {
+
     private Context context;
     private List<SummitsEntity> summits;
 
@@ -49,15 +54,19 @@ public class SummitAdapter extends BaseAdapter {
 
         holder.name.setText(summit.getSummitName());
 
-        // Combine Elevation and Prominence
         String detailText = "Elev: " + summit.getElevation() + "m | Prom: " + summit.getProminence() + "m";
         holder.details.setText(detailText);
 
-        // Toggle badge visibility
         holder.statusBadge.setVisibility(summit.isCompleted() ? View.VISIBLE : View.GONE);
 
-        // Ensure R.drawable.crough_patrick exists in your drawable folder!
-        holder.thumbnail.setImageResource(R.drawable.crough_patrick);
+        // Load thumbnail from DB, fall back to drawable if null
+        byte[] thumbnailBytes = summit.getThumbnail();
+        if (thumbnailBytes != null && thumbnailBytes.length > 0) {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(thumbnailBytes, 0, thumbnailBytes.length);
+            holder.thumbnail.setImageBitmap(bitmap);
+        } else {
+            holder.thumbnail.setImageResource(R.drawable.crough_patrick);
+        }
 
         return convertView;
     }

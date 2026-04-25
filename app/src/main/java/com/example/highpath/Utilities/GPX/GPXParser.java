@@ -1,6 +1,8 @@
 package com.example.highpath.Utilities.GPX;
 
 
+import com.example.highpath.Models.GPXData;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -8,7 +10,6 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 public class GPXParser {
 

@@ -2,16 +2,10 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="All Tests">
-        <State />
-      </entry>
       <entry key="MainActivity">
         <State />
       </entry>
-      <entry key="MapboxTokenTest">
-        <State />
-      </entry>
-      <entry key="OpenWeatherApiTest">
+      <entry key="SplitDatabaseTest">
         <State />
       </entry>
       <entry key="Tests in 'com.example.highpath'">

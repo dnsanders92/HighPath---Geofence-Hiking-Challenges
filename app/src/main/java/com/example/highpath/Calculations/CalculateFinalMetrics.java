@@ -5,7 +5,7 @@ import android.util.Log;
 
 import com.example.highpath.Database.Entities.SplitEntity;
 import com.example.highpath.Utilities.CheckGeofence;
-import com.example.highpath.Utilities.GPX.GPXData;
+import com.example.highpath.Models.GPXData;
 import com.example.highpath.Utilities.GPX.GPXParser;
 
 import java.util.ArrayList;

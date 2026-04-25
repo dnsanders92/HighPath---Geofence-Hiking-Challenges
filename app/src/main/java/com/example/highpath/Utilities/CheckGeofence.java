@@ -7,7 +7,7 @@ import com.example.highpath.Calculations.CalculateDistance;
 import com.example.highpath.Database.Entities.ChallengesEntity;
 import com.example.highpath.Database.Entities.SummitsEntity;
 import com.example.highpath.Database.LocalDatabase;
-import com.example.highpath.Utilities.GPX.GPXData;
+import com.example.highpath.Models.GPXData;
 
 import java.util.List;
 
