@@ -35,7 +35,7 @@ public class UpdateUser {
         // Using 11 as requested.
         // I am using 'user_id' here. If this fails, check your Supabase Table Editor
         // for the EXACT name of your primary key column.
-        String url = "https://" + projectId + ".supabase.co/rest/v1/users?user_id=eq.11";
+        String url = "https://" + projectId + ".supabase.co/rest/v1/users?user_id=eq." + userId;
 
         Log.d(TAG, "Targeting URL: " + url);
 
