@@ -12,6 +12,7 @@ import com.example.highpath.Database.Entities.SplitEntity;
 import com.example.highpath.Database.Entities.UserEntity;
 import com.example.highpath.Database.Supabase.InsertActivity;
 import com.example.highpath.Database.Supabase.UpdateUser;
+import com.example.highpath.Database.Supabase.UploadGpx;
 import com.example.highpath.Utilities.SetActivityName;
 
 public class ActivityBuilder {
@@ -93,14 +94,13 @@ public class ActivityBuilder {
                 );
 
                 // 4. Update User Stats on Supabase
-                // Using the updated values from the local 'user' object
                 UpdateUser.updateStatistics(
                         context,
                         user.getUserId(),
                         (double) user.getTotalDistanceKm(),
                         (double) user.getTotalElevationM(),
                         user.getCompletedActivities(),
-                        user.getCompletedChallenges(), // Assuming this getter exists in UserEntity
+                        user.getCompletedChallenges(),
                         user.getTotalMovingTimeSeconds(),
                         user.getTotalTimeOutsideSeconds(),
                         new UpdateUser.UpdateCallback() {
@@ -110,6 +110,21 @@ public class ActivityBuilder {
                             public void onFailure(String error) { Log.e(TAG, "Supabase user update failed: " + error); }
                         }
                 );
+
+                // 5. Upload GPX File to Supabase Storage
+                UploadGpx gpxUploader = new UploadGpx();
+                // Note: Casting long userId to int as per your UploadGpx signature
+                gpxUploader.upload(context, (int) user.getUserId(), fullPath, new UploadGpx.UploadCallback() {
+                    @Override
+                    public void onSuccess(String fileUrl) {
+                        Log.d(TAG, "GPX file successfully uploaded to storage: " + fileUrl);
+                    }
+
+                    @Override
+                    public void onFailure(String error) {
+                        Log.e(TAG, "GPX storage upload failed: " + error);
+                    }
+                });
 
             } else {
                 Log.w(TAG, "No user found.");
