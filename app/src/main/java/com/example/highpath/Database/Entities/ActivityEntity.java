@@ -13,6 +13,9 @@ public class ActivityEntity {
     @ColumnInfo(name = "activity_id")
     private String activityId;
 
+    @ColumnInfo(name = "user_id")
+    private int userId;
+
     @ColumnInfo(name = "activity_name")
     private String activityName;
 
@@ -53,6 +56,14 @@ public class ActivityEntity {
 
     public void setActivityId(@NonNull String activityId) {
         this.activityId = activityId;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getActivityName() {

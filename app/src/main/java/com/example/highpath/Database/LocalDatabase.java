@@ -53,7 +53,7 @@ public abstract class LocalDatabase extends RoomDatabase {
     public abstract TrackPointDao trackPointDao();
     public abstract SplitDao splitDao();
 
-    static final Migration MIGRATION_4_5 = new Migration(4, 5) {
+    static final Migration MIGRATION_4_5 = new Migration(5, 6) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             database.execSQL(

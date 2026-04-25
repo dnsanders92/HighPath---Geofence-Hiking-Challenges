@@ -1,7 +1,7 @@
 package com.example.highpath.Database.DatabaseServices;
 
-import android.content.Context;
 import android.util.Log;
+import android.content.Context;
 
 import com.example.highpath.Calculations.CalculateFinalMetrics;
 import com.example.highpath.Database.LocalDatabase;
@@ -10,6 +10,8 @@ import com.example.highpath.Database.Daos.UserDao;
 import com.example.highpath.Database.Entities.ActivityEntity;
 import com.example.highpath.Database.Entities.SplitEntity;
 import com.example.highpath.Database.Entities.UserEntity;
+import com.example.highpath.Database.Supabase.InsertActivity;
+import com.example.highpath.Database.Supabase.UpdateUser;
 import com.example.highpath.Utilities.SetActivityName;
 
 public class ActivityBuilder {
@@ -30,8 +32,10 @@ public class ActivityBuilder {
             UserEntity user = userDao.getSingleUser();
 
             if (user != null) {
+                // 1. Create and Save Activity Locally
                 ActivityEntity activity = new ActivityEntity();
                 activity.setActivityId(user.getUserId() + "_" + System.currentTimeMillis());
+                activity.setUserId(user.getUserId());
                 activity.setActivityName(setActivityName.getActivityName());
                 activity.setDistance(metrics.totalDistanceKM);
                 activity.setElevationGain(metrics.totalElevationGainM);
@@ -42,6 +46,7 @@ public class ActivityBuilder {
                 activity.setGpxFilePath(fullPath);
                 activity.setTimestamp(System.currentTimeMillis());
                 activity.setCalories(1230.0);
+                activity.setIsChallenge(false);
 
                 activityDao.insertActivity(activity);
 
@@ -51,9 +56,9 @@ public class ActivityBuilder {
                         split.setActivityId(activity.getActivityId());
                     }
                     db.splitDao().insertSplits(metrics.splits);
-                    Log.d(TAG, "Splits saved: " + metrics.splits.size());
                 }
 
+                // 2. Update User Stats Locally
                 user.setTotalDistanceKm(user.getTotalDistanceKm() + (int) Math.round(metrics.totalDistanceKM));
                 user.setTotalElevationM(user.getTotalElevationM() + (int) Math.round(metrics.totalElevationGainM));
                 user.setTotalTimeOutsideSeconds(user.getTotalTimeOutsideSeconds() + (int) metrics.totalTimeOutside);
@@ -61,12 +66,54 @@ public class ActivityBuilder {
                 user.setCompletedActivities(user.getCompletedActivities() + 1);
 
                 userDao.update(user);
+                Log.d(TAG, "Activity and user stats saved locally.");
 
-                Log.d(TAG, "Activity saved for: " + user.getFirstName());
+                // 3. Sync Activity to Supabase
+                InsertActivity.insert(
+                        context,
+                        activity.getActivityId(),
+                        activity.getUserId(),
+                        activity.getActivityName(),
+                        activity.getDistance(),
+                        activity.getElevationGain(),
+                        activity.getElevationLoss(),
+                        activity.getAveragePace(),
+                        activity.getMovingTime(),
+                        activity.getActualTime(),
+                        activity.getCalories(),
+                        activity.getGpxFilePath(),
+                        activity.getTimestamp(),
+                        activity.getIsChallenge() != null && activity.getIsChallenge(),
+                        new InsertActivity.ActivityCallback() {
+                            @Override
+                            public void onSuccess() { Log.d(TAG, "Supabase activity synced."); }
+                            @Override
+                            public void onFailure(String error) { Log.e(TAG, "Supabase activity sync failed: " + error); }
+                        }
+                );
+
+                // 4. Update User Stats on Supabase
+                // Using the updated values from the local 'user' object
+                UpdateUser.updateStatistics(
+                        context,
+                        user.getUserId(),
+                        (double) user.getTotalDistanceKm(),
+                        (double) user.getTotalElevationM(),
+                        user.getCompletedActivities(),
+                        user.getCompletedChallenges(), // Assuming this getter exists in UserEntity
+                        user.getTotalMovingTimeSeconds(),
+                        user.getTotalTimeOutsideSeconds(),
+                        new UpdateUser.UpdateCallback() {
+                            @Override
+                            public void onSuccess() { Log.d(TAG, "Supabase user stats updated."); }
+                            @Override
+                            public void onFailure(String error) { Log.e(TAG, "Supabase user update failed: " + error); }
+                        }
+                );
+
             } else {
                 Log.w(TAG, "No user found.");
             }
-
         }).start();
     }
 }
