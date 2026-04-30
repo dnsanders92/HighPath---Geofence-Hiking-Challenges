@@ -1,196 +1,86 @@
 package com.example.highpath.Services;
 
-import android.os.Handler;
-import android.os.Looper;
+import android.util.Log;
 
-import com.example.highpath.Models.GPXData;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
-import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class ElevationAPIService {
 
-    public interface ElevationCallback {
-        void onSuccess(List<Double> correctedElevations);
-        void onFailure(Throwable t);
-    }
+    private static final String BASE_URL = "https://api.opentopodata.org/v1/srtm30m?locations=";
 
-    private static final String BASE_URL = "https://api.open-elevation.com/api/v1/lookup";
-    private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+    public List<Double> getBatchElevations(double[][] coordinates) {
 
-    private final OkHttpClient client;
-    private final Gson gson = new Gson();
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+        List<Double> elevations = new ArrayList<>();
 
-    public ElevationAPIService() {
-        client = new OkHttpClient.Builder()
-                .callTimeout(30, TimeUnit.SECONDS)
-                .build();
-    }
-
-    /**
-     * Public entry. Will call the callback on the main thread.
-     * Expects gpxData.latitudes, longitudes and elevations to be same length.
-     */
-    public void getElevation(final GPXData gpxData, final ElevationCallback callback) {
-        if (gpxData == null || gpxData.latitudes == null || gpxData.longitudes == null) {
-            postFailure(callback, new IllegalArgumentException("GPXData or coordinate lists are null"));
-            return;
-        }
-        final int total = gpxData.latitudes.size();
-        if (gpxData.longitudes.size() != total) {
-            postFailure(callback, new IllegalArgumentException("Latitude and longitude lists differ in size"));
-            return;
-        }
-
-        final int packetSize = 100;
-        final List<Double> correctedElevations = new ArrayList<>(total);
-
-        // Process packets sequentially using recursion/chain of async calls
-        processPacket(0, packetSize, gpxData, correctedElevations, callback);
-    }
-
-    private void processPacket(final int start,
-                               final int packetSize,
-                               final GPXData gpxData,
-                               final List<Double> correctedElevations,
-                               final ElevationCallback callback) {
-
-        final int total = gpxData.latitudes.size();
-        if (start >= total) {
-            // done
-            postSuccess(callback, correctedElevations);
-            return;
-        }
-
-        final int end = Math.min(start + packetSize, total);
-
-        // Build JSON body: {"locations":[{"latitude":..,"longitude":..}, ...]}
-        JsonObject bodyJson = new JsonObject();
-        JsonArray locations = new JsonArray();
-        for (int i = start; i < end; i++) {
-            JsonObject point = new JsonObject();
-            point.addProperty("latitude", gpxData.latitudes.get(i));
-            point.addProperty("longitude", gpxData.longitudes.get(i));
-            locations.add(point);
-        }
-        bodyJson.add("locations", locations);
-
-        RequestBody requestBody = RequestBody.create(gson.toJson(bodyJson), JSON);
-        Request request = new Request.Builder()
-                .url(BASE_URL)
-                .post(requestBody)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                // fallback: append original elevations for this packet and continue
-                for (int i = start; i < end; i++) {
-                    correctedElevations.add(gpxData.elevations.get(i));
-                }
-                // Optionally retry logic could be added here. Continue to next packet.
-                processPacket(end, packetSize, gpxData, correctedElevations, callback);
+        try {
+            // Build pipe-separated locations string: "lat,lng|lat,lng|..."
+            StringBuilder locBuilder = new StringBuilder();
+            for (int i = 0; i < coordinates.length; i++) {
+                locBuilder.append(coordinates[i][0])
+                        .append(",")
+                        .append(coordinates[i][1]);
+                if (i < coordinates.length - 1) locBuilder.append("|");
             }
 
-            @Override
-            public void onResponse(Call call, Response response) {
-                try {
-                    if (response.body() == null) {
-                        // fallback to original elevations for this packet
-                        for (int i = start; i < end; i++) {
-                            correctedElevations.add(gpxData.elevations.get(i));
-                        }
-                        processPacket(end, packetSize, gpxData, correctedElevations, callback);
-                        return;
-                    }
+            URL url = new URL(BASE_URL + locBuilder);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
 
-                    String bodyString = response.body().string();
+            int responseCode = conn.getResponseCode();
+            Log.d("ElevationAPI", "Response code: " + responseCode);
 
-                    // Defensive parsing with Gson
-                    JsonElement rootEl = gson.fromJson(bodyString, JsonElement.class);
-                    List<Double> packetElevations = new ArrayList<>();
+            if (responseCode == 200) {
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line);
 
-                    if (rootEl != null && rootEl.isJsonObject()) {
-                        JsonObject rootObj = rootEl.getAsJsonObject();
-                        if (rootObj.has("results") && rootObj.get("results").isJsonArray()) {
-                            JsonArray results = rootObj.getAsJsonArray("results");
-                            for (JsonElement el : results) {
-                                if (el.isJsonObject() && el.getAsJsonObject().has("elevation")) {
-                                    packetElevations.add(el.getAsJsonObject().get("elevation").getAsDouble());
-                                } else {
-                                    packetElevations.add(Double.NaN);
-                                }
-                            }
+                // Response: {"results": [{"elevation": 120.5, "location": {...}}, ...], "status": "OK"}
+                JSONObject json = new JSONObject(sb.toString());
+                String status = json.getString("status");
+                Log.d("ElevationAPI", "API status: " + status);
+
+                if (status.equals("OK")) {
+                    JSONArray results = json.getJSONArray("results");
+                    for (int i = 0; i < results.length(); i++) {
+                        JSONObject result = results.getJSONObject(i);
+                        // elevation can be null if point is outside dataset bounds
+                        if (result.isNull("elevation")) {
+                            Log.w("ElevationAPI", "Null elevation at index " + i);
+                            elevations.add(0.0);
                         } else {
-                            // Unexpected shape: fallback
-                            for (int i = start; i < end; i++) {
-                                packetElevations.add(gpxData.elevations.get(i));
-                            }
-                        }
-                    } else {
-                        // Unexpected shape: fallback
-                        for (int i = start; i < end; i++) {
-                            packetElevations.add(gpxData.elevations.get(i));
+                            elevations.add(result.getDouble("elevation"));
                         }
                     }
-
-                    // Ensure size matches packet length; if not, fallback per-index
-                    int expected = end - start;
-                    if (packetElevations.size() != expected) {
-                        // fill missing with original values
-                        List<Double> fixed = new ArrayList<>(expected);
-                        for (int i = 0; i < expected; i++) {
-                            if (i < packetElevations.size() && !packetElevations.get(i).isNaN()) {
-                                fixed.add(packetElevations.get(i));
-                            } else {
-                                fixed.add(gpxData.elevations.get(start + i));
-                            }
-                        }
-                        correctedElevations.addAll(fixed);
-                    } else {
-                        correctedElevations.addAll(packetElevations);
-                    }
-
-                    // Continue with next packet
-                    processPacket(end, packetSize, gpxData, correctedElevations, callback);
-
-                } catch (Exception ex) {
-                    // On parse or other error, fallback and continue
-                    for (int i = start; i < end; i++) {
-                        correctedElevations.add(gpxData.elevations.get(i));
-                    }
-                    processPacket(end, packetSize, gpxData, correctedElevations, callback);
-                } finally {
-                    response.close();
+                    Log.d("ElevationAPI", "Got " + elevations.size() + " elevations for " + coordinates.length + " points");
                 }
+
+            } else {
+                BufferedReader errReader = new BufferedReader(
+                        new InputStreamReader(conn.getErrorStream()));
+                StringBuilder errBody = new StringBuilder();
+                String errLine;
+                while ((errLine = errReader.readLine()) != null) errBody.append(errLine);
+                Log.e("ElevationAPI", "Error: " + errBody);
             }
-        });
-    }
 
-    private void postSuccess(ElevationCallback callback, List<Double> correctedElevations) {
-        mainHandler.post(() -> {
-            if (callback != null) callback.onSuccess(correctedElevations);
-        });
-    }
+            conn.disconnect();
 
-    private void postFailure(ElevationCallback callback, Throwable t) {
-        mainHandler.post(() -> {
-            if (callback != null) callback.onFailure(t);
-        });
+        } catch (Exception e) {
+            Log.e("ElevationAPI", "Failed to get elevations", e);
+        }
+
+        return elevations;
     }
 }
