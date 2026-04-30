@@ -41,7 +41,6 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Bind Views
         loginEmail = view.findViewById(R.id.loginEmail);
         loginPassword = view.findViewById(R.id.loginPassword);
         loginButton = view.findViewById(R.id.loginButton);
@@ -71,25 +70,23 @@ public class LoginFragment extends Fragment {
         loginButton.setEnabled(false);
         loginButton.setText("Signing In...");
 
-        // Capture application context BEFORE any async work —
-        // the fragment may be detached by the time callbacks fire
         final Context appContext = requireContext().getApplicationContext();
 
         LoginUser.login(appContext, email, password, new LoginUser.LoginCallback() {
             @Override
             public void onSuccess(JSONObject userData) {
+
                 // 1. Sync user profile to local Room DB
                 CreateLocalUser.syncCloudToLocal(appContext, userData);
 
-                // 2. Sync activities for this user
                 try {
                     int userId = userData.getInt("user_id");
 
+                    // 2. Sync activities
                     SyncActivities.fetchUserActivities(appContext, userId,
                             new SyncActivities.ActivitySyncCallback() {
                                 @Override
                                 public void onSuccess(JSONArray activities) {
-                                    // appContext is safe here even after fragment finishes
                                     CreateLocalUser.syncActivitiesToLocal(appContext, activities);
                                     Log.d(TAG, "Activities synced on login: " + activities.length());
                                 }
@@ -100,11 +97,26 @@ public class LoginFragment extends Fragment {
                                 }
                             });
 
+                    // 3. Sync splits
+                    SyncActivities.fetchUserSplits(appContext, userId,
+                            new SyncActivities.SplitSyncCallback() {
+                                @Override
+                                public void onSuccess(JSONArray splits) {
+                                    CreateLocalUser.syncSplitsToLocal(appContext, splits);
+                                    Log.d(TAG, "Splits synced on login: " + splits.length());
+                                }
+
+                                @Override
+                                public void onFailure(String error) {
+                                    Log.e(TAG, "Splits sync failed: " + error);
+                                }
+                            });
+
                 } catch (Exception e) {
-                    Log.e(TAG, "Could not get userId for activity sync: " + e.getMessage());
+                    Log.e(TAG, "Could not get userId for sync: " + e.getMessage());
                 }
 
-                // 3. Navigate to MainActivity
+                // 4. Navigate to MainActivity
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
                         Intent intent = new Intent(appContext, MainActivity.class);

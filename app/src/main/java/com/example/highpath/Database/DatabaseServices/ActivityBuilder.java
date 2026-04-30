@@ -11,6 +11,7 @@ import com.example.highpath.Database.Entities.ActivityEntity;
 import com.example.highpath.Database.Entities.SplitEntity;
 import com.example.highpath.Database.Entities.UserEntity;
 import com.example.highpath.Database.Supabase.InsertActivity;
+import com.example.highpath.Database.Supabase.InsertSplits;
 import com.example.highpath.Database.Supabase.UpdateUser;
 import com.example.highpath.Database.Supabase.UploadGpx;
 import com.example.highpath.Utilities.SetActivityName;
@@ -92,6 +93,18 @@ public class ActivityBuilder {
                             public void onFailure(String error) { Log.e(TAG, "Supabase activity sync failed: " + error); }
                         }
                 );
+
+                InsertSplits.insert(
+                        context,
+                        (int) user.getUserId(),
+                        metrics.splits,
+                        new InsertSplits.InsertCallback() {
+                            @Override
+                            public void onSuccess() { Log.d(TAG, "Splits synced to Supabase."); }
+                            @Override
+                            public void onFailure(String error) { Log.e(TAG, "Splits sync failed: " + error); }
+                        }
+                );;
 
                 // 4. Update User Stats on Supabase
                 UpdateUser.updateStatistics(

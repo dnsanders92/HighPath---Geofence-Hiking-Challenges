@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import com.example.highpath.Database.Entities.ActivityEntity;
+import com.example.highpath.Database.Entities.SplitEntity;
 import com.example.highpath.Database.Entities.UserEntity;
 import com.example.highpath.Database.LocalDatabase;
 import com.example.highpath.R;
@@ -14,14 +15,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CreateLocalUser {
 
     private static final String TAG = "SyncDebug";
 
-    /**
-     * Maps the JSONArray from Supabase to the local Room Activity table.
-     */
     public static void syncActivitiesToLocal(final Context context, JSONArray activitiesArray) {
         new Thread(() -> {
             try {
@@ -32,7 +32,6 @@ public class CreateLocalUser {
                     JSONObject obj = activitiesArray.getJSONObject(i);
                     ActivityEntity activity = new ActivityEntity();
 
-                    // Ensure keys match your Supabase column names exactly
                     activity.setActivityId(obj.getString("activity_id"));
                     activity.setUserId(obj.getInt("user_id"));
                     activity.setActivityName(obj.optString("activity_name", "Activity"));
@@ -47,7 +46,6 @@ public class CreateLocalUser {
                     activity.setTimestamp(obj.optLong("timestamp", System.currentTimeMillis()));
                     activity.setIsChallenge(obj.optBoolean("is_challenge", false));
 
-                    // Using the renamed DAO method
                     db.activityDao().insert(activity);
                 }
                 Log.d(TAG, "Activity Sync Complete.");
@@ -58,9 +56,36 @@ public class CreateLocalUser {
         }).start();
     }
 
-    /**
-     * Syncs the core profile stats.
-     */
+    public static void syncSplitsToLocal(final Context context, JSONArray splitsArray) {
+        new Thread(() -> {
+            try {
+                LocalDatabase db = LocalDatabase.getInstance(context);
+                Log.d(TAG, "Saving " + splitsArray.length() + " splits to Room.");
+
+                List<SplitEntity> splitList = new ArrayList<>();
+
+                for (int i = 0; i < splitsArray.length(); i++) {
+                    JSONObject obj = splitsArray.getJSONObject(i);
+                    SplitEntity split = new SplitEntity();
+                    split.setActivityId(obj.getString("activity_id"));
+                    split.setSplitIndex(obj.getInt("split_index"));
+                    split.setPace(obj.getDouble("split_pace"));
+                    split.setDistance(obj.getDouble("split_distance"));
+                    splitList.add(split);
+                }
+
+                if (!splitList.isEmpty()) {
+                    db.splitDao().insertSplits(splitList);
+                }
+
+                Log.d(TAG, "Splits Sync Complete.");
+            } catch (Exception e) {
+                Log.e(TAG, "Error saving splits to Room: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
     public static void syncCloudToLocal(final Context context, JSONObject json) {
         new Thread(() -> {
             try {
@@ -90,9 +115,6 @@ public class CreateLocalUser {
         }).start();
     }
 
-    /**
-     * Initial setup for brand new users.
-     */
     public static void addUser(final Context context, int userId, String firstName, String surname,
                                String month, int year) {
         new Thread(() -> {
