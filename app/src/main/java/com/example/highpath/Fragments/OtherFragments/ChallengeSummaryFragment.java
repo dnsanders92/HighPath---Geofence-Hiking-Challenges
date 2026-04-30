@@ -73,8 +73,7 @@ public class ChallengeSummaryFragment extends Fragment {
                     if (item.getSummitId() != null) {
                         SummitsEntity summit = db.summitsDao().getSummitById(item.getSummitId());
                         if (summit != null) {
-                            // Override the summit's completed flag with the challenge item's flag
-                            // so completion is per-challenge not global
+
                             summit.setCompleted(item.isCompleted());
                             summits.add(summit);
                         }

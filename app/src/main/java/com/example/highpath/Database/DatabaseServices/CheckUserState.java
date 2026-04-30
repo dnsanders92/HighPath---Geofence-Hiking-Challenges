@@ -20,8 +20,6 @@ public class CheckUserState {
 
                 if (!hasUser) {
 
-                    new AddChallenges().insertChallenges(activity);
-
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

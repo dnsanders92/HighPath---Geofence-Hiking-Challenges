@@ -49,7 +49,7 @@ public class ActivityBuilder {
                 activity.setCalories(1230.0);
                 activity.setIsChallenge(false);
 
-                activityDao.insertActivity(activity);
+                activityDao.insert(activity);
 
                 // Save splits
                 if (!metrics.splits.isEmpty()) {

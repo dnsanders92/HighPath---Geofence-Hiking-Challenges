@@ -20,7 +20,62 @@ public class CreateUser {
     }
 
     /**
-     * Creates a user in the database and then initializes their storage folders.
+     * Step 1: Register Email/Password with Supabase Auth
+     */
+    public static void signUp(
+            Context context,
+            String email,
+            String password,
+            String firstName,
+            String surname,
+            String monthOfBirth,
+            Integer yearOfBirth,
+            UserCallback callback
+    ) {
+        String projectId = context.getString(R.string.supabase_project_id);
+        String apiKey = context.getString(R.string.supabase_api_key);
+        String authUrl = "https://" + projectId + ".supabase.co/auth/v1/signup";
+
+        JSONObject authJson = new JSONObject();
+        try {
+            authJson.put("email", email);
+            authJson.put("password", password);
+        } catch (JSONException e) {
+            callback.onFailure("Auth JSON Error");
+            return;
+        }
+
+        OkHttpClient client = new OkHttpClient();
+        RequestBody body = RequestBody.create(authJson.toString(), MediaType.parse("application/json"));
+
+        Request request = new Request.Builder()
+                .url(authUrl)
+                .addHeader("apikey", apiKey)
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onFailure("Auth Network Failure: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    // Auth success! Now proceed to create the public profile record
+                    addUser(context, firstName, surname, monthOfBirth, yearOfBirth, 0, 0, 0, 0, 0L, 0L, callback);
+                } else {
+                    String error = response.body() != null ? response.body().string() : "Unknown Auth Error";
+                    callback.onFailure("Auth Failed: " + error);
+                }
+                response.close();
+            }
+        });
+    }
+
+    /**
+     * Step 2: Add User Profile to Public Table
      */
     public static void addUser(
             Context context,
@@ -42,7 +97,6 @@ public class CreateUser {
         String dbUrl = "https://" + projectId + ".supabase.co/rest/v1/users";
         String storageBaseUrl = "https://" + projectId + ".supabase.co/storage/v1/object/user-data/";
 
-        // 1. Construct JSON for Database
         JSONObject json = new JSONObject();
         try {
             json.put("first_name", firstName);
@@ -61,10 +115,7 @@ public class CreateUser {
         }
 
         OkHttpClient client = new OkHttpClient();
-        RequestBody body = RequestBody.create(
-                json.toString(),
-                MediaType.parse("application/json; charset=utf-8")
-        );
+        RequestBody body = RequestBody.create(json.toString(), MediaType.parse("application/json; charset=utf-8"));
 
         Request dbRequest = new Request.Builder()
                 .url(dbUrl)
@@ -75,11 +126,10 @@ public class CreateUser {
                 .post(body)
                 .build();
 
-        // 2. Execute Database Insert
         client.newCall(dbRequest).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                callback.onFailure("Network failure: " + e.getMessage());
+                callback.onFailure("Database network failure: " + e.getMessage());
             }
 
             @Override
@@ -89,16 +139,12 @@ public class CreateUser {
                     try {
                         JSONArray jsonArray = new JSONArray(responseBody);
                         long generatedId = jsonArray.getJSONObject(0).getLong("user_id");
-
-                        // 3. Database success! Now create the folders
                         createStorageFolders(client, storageBaseUrl, apiKey, generatedId, callback);
-
                     } catch (JSONException e) {
                         callback.onFailure("Parsing error: " + e.getMessage());
                     }
                 } else {
-                    String error = response.body() != null ? response.body().string() : "No error body";
-                    callback.onFailure("Code: " + response.code() + " Message: " + error);
+                    callback.onFailure("DB Code: " + response.code());
                 }
                 response.close();
             }
@@ -106,19 +152,11 @@ public class CreateUser {
     }
 
     private static void createStorageFolders(OkHttpClient client, String baseUrl, String apiKey, long userId, UserCallback callback) {
-        // Define paths for the two sub-folders
-        String[] folderPaths = {
-                userId + "/gpx_files/.keep",
-                userId + "/user_images/.keep"
-        };
-
+        String[] folderPaths = { userId + "/gpx_files/.keep", userId + "/user_images/.keep" };
         AtomicInteger completedRequests = new AtomicInteger(0);
-        int totalRequests = folderPaths.length;
 
         for (String path : folderPaths) {
-            // Empty body is sufficient to "initialize" the path
             RequestBody emptyBody = RequestBody.create("", MediaType.parse("text/plain"));
-
             Request storageRequest = new Request.Builder()
                     .url(baseUrl + path)
                     .addHeader("apikey", apiKey)
@@ -128,23 +166,16 @@ public class CreateUser {
 
             client.newCall(storageRequest).enqueue(new Callback() {
                 @Override
-                public void onFailure(Call call, IOException e) {
-                    Log.e(TAG, "Failed to create folder path: " + path);
-                    checkCompletion();
-                }
+                public void onFailure(Call call, IOException e) { checkCompletion(); }
 
                 @Override
                 public void onResponse(Call call, Response response) {
-                    if (!response.isSuccessful()) {
-                        Log.e(TAG, "Storage error (" + response.code() + ") for path: " + path);
-                    }
                     response.close();
                     checkCompletion();
                 }
 
                 private void checkCompletion() {
-                    // Once both folder requests are attempted, we signal success for the overall user creation
-                    if (completedRequests.incrementAndGet() == totalRequests) {
+                    if (completedRequests.incrementAndGet() == folderPaths.length) {
                         callback.onSuccess(userId);
                     }
                 }

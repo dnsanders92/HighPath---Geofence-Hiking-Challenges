@@ -7,4 +7,6 @@ public class GPXData {
     public List<Double> longitudes;
     public List<Double> elevations;
     public List<String> timestamps;
+
+    public List<Double> correctedElevations;
 }

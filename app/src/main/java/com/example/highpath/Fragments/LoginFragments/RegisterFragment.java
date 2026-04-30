@@ -23,7 +23,7 @@ import com.google.android.material.textfield.TextInputEditText;
 
 public class RegisterFragment extends Fragment {
 
-    private TextInputEditText registerEmail, registerPassword, firstName, surname, birthYear;
+    private TextInputEditText registerEmail, registerPassword, confirmPassword, firstName, surname, birthYear;
     private AutoCompleteTextView birthMonth;
     private MaterialButton completeRegistration;
 
@@ -48,6 +48,7 @@ public class RegisterFragment extends Fragment {
     private void bindViews(View view) {
         registerEmail        = view.findViewById(R.id.registerEmail);
         registerPassword     = view.findViewById(R.id.registerPassword);
+        confirmPassword      = view.findViewById(R.id.confirmPassword);
         firstName            = view.findViewById(R.id.firstName);
         surname              = view.findViewById(R.id.surname);
         birthMonth           = view.findViewById(R.id.birthMonth);
@@ -61,23 +62,38 @@ public class RegisterFragment extends Fragment {
     }
 
     private void submitRegistration() {
+        String email = registerEmail.getText().toString().trim();
+        String password = registerPassword.getText().toString().trim();
+        String confirmPw = confirmPassword.getText().toString().trim();
         String fName = firstName.getText().toString().trim();
         String sName = surname.getText().toString().trim();
         String bMonth = birthMonth.getText().toString().trim();
         String bYearStr = birthYear.getText().toString().trim();
+
+        // Validation
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(getContext(), "Please fill in all account credentials", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!password.equals(confirmPw)) {
+            Toast.makeText(getContext(), "Passwords do not match", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Integer bYear = bYearStr.isEmpty() ? 0 : Integer.parseInt(bYearStr);
 
         completeRegistration.setEnabled(false);
-        completeRegistration.setText("Syncing...");
+        completeRegistration.setText("Registering...");
 
-        // Start Supabase Registration
-        CreateUser.addUser(
+        // Start Auth + Profile Registration
+        CreateUser.signUp(
                 requireContext(),
-                fName, sName, bMonth, bYear, 0, 0, 0, 0, 0L, 0L,
+                email, password,
+                fName, sName, bMonth, bYear,
                 new CreateUser.UserCallback() {
                     @Override
                     public void onSuccess(long userId) {
-                        // Success: Save locally and move on
                         CreateLocalUser.addUser(requireContext(), (int) userId, fName, sName, bMonth, bYear);
 
                         if (getActivity() != null) {
@@ -95,8 +111,8 @@ public class RegisterFragment extends Fragment {
                         if (getActivity() != null) {
                             getActivity().runOnUiThread(() -> {
                                 completeRegistration.setEnabled(true);
-                                completeRegistration.setText("Register");
-                                Toast.makeText(getContext(), "Registration failed, check logs.", Toast.LENGTH_SHORT).show();
+                                completeRegistration.setText("Create Account");
+                                Toast.makeText(getContext(), "Error: " + error, Toast.LENGTH_LONG).show();
                             });
                         }
                     }

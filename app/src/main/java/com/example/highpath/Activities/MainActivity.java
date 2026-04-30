@@ -37,17 +37,10 @@ public class MainActivity extends AppCompatActivity {
         CheckUserState.checkUser(this);
 
         BottomNavigationView navBar = findViewById(R.id.bottom_navigation);
-        navBar.setVisibility(View.GONE);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         new NavigationControl(fragmentManager, navBar);
-
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.container, new SplashScreenFragment())
-                .commit();
-
 
         locationService = new LocationService(this);
         checkAndRequestPermissions();
