@@ -34,10 +34,14 @@ public class CalculateFinalMetrics {
             if (gpx != null && gpx.latitudes.size() >= 2) {
 
                 // 2. Fetch corrected elevations from API
-                // We check for MainThread because API calls will crash the app there
+                // Wrapped in its own try-catch so a failed API call never kills the rest
                 if (Looper.myLooper() != Looper.getMainLooper()) {
-                    CorrectElevations corrector = new CorrectElevations();
-                    corrector.updateGPXElevations(gpx);
+                    try {
+                        CorrectElevations corrector = new CorrectElevations();
+                        corrector.updateGPXElevations(gpx);
+                    } catch (Exception e) {
+                        Log.e("FinalMetrics", "Elevation correction failed, continuing with raw elevations", e);
+                    }
                 } else {
                     Log.w("FinalMetrics", "Skipping API correction: Method called on Main Thread");
                 }
@@ -49,11 +53,9 @@ public class CalculateFinalMetrics {
                 // 4. Calculate Elevation Gain/Loss
                 double[] elevations;
                 if (gpx.correctedElevations != null && !gpx.correctedElevations.isEmpty()) {
-                    // Use the API-corrected data
                     elevations = CalculateElevation.calcGainLoss(gpx.correctedElevations);
                     Log.d("FinalMetrics", "Using corrected elevations (" + gpx.correctedElevations.size() + " points)");
                 } else {
-                    // Fallback to raw GPS data if API failed or was skipped
                     elevations = CalculateElevation.calcGainLoss(gpx.elevations);
                     Log.w("FinalMetrics", "Using raw GPX elevations - correction unavailable");
                 }
