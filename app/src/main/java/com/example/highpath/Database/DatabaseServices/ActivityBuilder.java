@@ -14,6 +14,7 @@ import com.example.highpath.Database.Supabase.InsertActivity;
 import com.example.highpath.Database.Supabase.InsertSplits;
 import com.example.highpath.Database.Supabase.UpdateUser;
 import com.example.highpath.Database.Supabase.UploadGpx;
+import com.example.highpath.Database.Supabase.UploadTrailMap;
 import com.example.highpath.MapBox.GenerateTrailMap;
 import com.example.highpath.Utilities.SetActivityName;
 
@@ -166,6 +167,27 @@ public class ActivityBuilder {
                         Log.e(TAG, "GPX storage upload failed: " + error);
                     }
                 });
+
+                // 6. Upload Trail Map Image to Supabase Storage
+                if (metrics.gpx != null && metrics.gpx.trailMapImage != null) {
+                    UploadTrailMap.upload(
+                            context,
+                            23,
+                            activity.getActivityId(),
+                            metrics.gpx.trailMapImage,
+                            new UploadTrailMap.UploadCallback() {
+                                @Override
+                                public void onSuccess(String fileUrl) {
+                                    Log.d(TAG, "Trail map uploaded to storage: " + fileUrl);
+                                }
+
+                                @Override
+                                public void onFailure(String error) {
+                                    Log.e(TAG, "Trail map upload failed: " + error);
+                                }
+                            }
+                    );
+                }
 
             } else {
                 Log.w(TAG, "No user found.");
