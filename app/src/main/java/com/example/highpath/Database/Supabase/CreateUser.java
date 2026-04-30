@@ -152,7 +152,12 @@ public class CreateUser {
     }
 
     private static void createStorageFolders(OkHttpClient client, String baseUrl, String apiKey, long userId, UserCallback callback) {
-        String[] folderPaths = { userId + "/gpx_files/.keep", userId + "/user_images/.keep" };
+        String[] folderPaths = {
+                userId + "/gpx_files/.keep",
+                userId + "/user_images/.keep",
+                userId + "/trail_map_images/.keep"
+        };
+
         AtomicInteger completedRequests = new AtomicInteger(0);
 
         for (String path : folderPaths) {

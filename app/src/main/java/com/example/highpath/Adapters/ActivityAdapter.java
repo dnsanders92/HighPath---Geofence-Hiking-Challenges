@@ -1,6 +1,8 @@
 package com.example.highpath.Adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +66,6 @@ public class ActivityAdapter extends BaseAdapter {
 
         holder.activityName.setText(a.getActivityName() != null ? a.getActivityName() : "Unnamed Activity");
 
-        // Safety checks for Long and Double wrapper objects
         long timestamp = a.getTimestamp() != null ? a.getTimestamp() : 0L;
         holder.activityDate.setText(formatDate(timestamp));
 
@@ -81,11 +82,26 @@ public class ActivityAdapter extends BaseAdapter {
         holder.activityPace.setText(formatPace(pace));
 
         if (holder.trophyBadge != null) {
-            // Updated to use the correct getter name and handle nullability
             if (a.getIsChallenge() != null && a.getIsChallenge()) {
                 holder.trophyBadge.setVisibility(View.VISIBLE);
             } else {
                 holder.trophyBadge.setVisibility(View.GONE);
+            }
+        }
+
+        // Set trail map image if available, otherwise hide the ImageView
+        if (holder.image != null) {
+            byte[] imageBytes = a.getTrailMapImage();
+            if (imageBytes != null && imageBytes.length > 0) {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                if (bitmap != null) {
+                    holder.image.setImageBitmap(bitmap);
+                    holder.image.setVisibility(View.VISIBLE);
+                } else {
+                    holder.image.setVisibility(View.GONE);
+                }
+            } else {
+                holder.image.setVisibility(View.GONE);
             }
         }
 

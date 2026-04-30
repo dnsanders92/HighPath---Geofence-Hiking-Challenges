@@ -1,9 +1,12 @@
 package com.example.highpath.Fragments.OtherFragments;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -26,6 +29,7 @@ public class SummaryFragment extends Fragment {
     private String activityId;
     private TextView nameView, distanceView, elevationView, actualTimeView, movingTimeView;
     private ListView splitsList;
+    private ImageView trailMapImage;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -47,6 +51,7 @@ public class SummaryFragment extends Fragment {
         actualTimeView = view.findViewById(R.id.actualTimeSummary);
         movingTimeView = view.findViewById(R.id.movingTimeSummary);
         splitsList     = view.findViewById(R.id.splitsListViewSummary);
+        trailMapImage  = view.findViewById(R.id.gpxTrailMap);
 
         loadActivityFromDb();
     }
@@ -68,6 +73,22 @@ public class SummaryFragment extends Fragment {
                     elevationView.setText(formatElevation(activity.getElevationGain()));
                     movingTimeView.setText(formatDuration(activity.getMovingTime()));
                     actualTimeView.setText(formatDuration(activity.getActualTime()));
+
+                    // Load trail map image if available
+                    if (trailMapImage != null) {
+                        byte[] imageBytes = activity.getTrailMapImage();
+                        if (imageBytes != null && imageBytes.length > 0) {
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                            if (bitmap != null) {
+                                trailMapImage.setImageBitmap(bitmap);
+                                trailMapImage.setVisibility(View.VISIBLE);
+                            } else {
+                                trailMapImage.setVisibility(View.GONE);
+                            }
+                        } else {
+                            trailMapImage.setVisibility(View.GONE);
+                        }
+                    }
                 }
 
                 if (splits != null && !splits.isEmpty()) {

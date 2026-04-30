@@ -1,7 +1,7 @@
 package com.example.highpath.Database.DatabaseServices;
 
-import android.util.Log;
 import android.content.Context;
+import android.util.Log;
 
 import com.example.highpath.Calculations.CalculateFinalMetrics;
 import com.example.highpath.Database.LocalDatabase;
@@ -14,7 +14,10 @@ import com.example.highpath.Database.Supabase.InsertActivity;
 import com.example.highpath.Database.Supabase.InsertSplits;
 import com.example.highpath.Database.Supabase.UpdateUser;
 import com.example.highpath.Database.Supabase.UploadGpx;
+import com.example.highpath.MapBox.GenerateTrailMap;
 import com.example.highpath.Utilities.SetActivityName;
+
+import java.util.concurrent.CountDownLatch;
 
 public class ActivityBuilder {
 
@@ -26,6 +29,26 @@ public class ActivityBuilder {
             CalculateFinalMetrics metrics = new CalculateFinalMetrics();
             metrics.calculateMetrics(context, fullPath);
             SetActivityName setActivityName = new SetActivityName();
+
+            // Generate trail map and store bytes in gpxData.trailMapImage
+            if (metrics.gpx != null) {
+                CountDownLatch latch = new CountDownLatch(1);
+                GenerateTrailMap.generateMap(context, metrics.gpx, new GenerateTrailMap.TrailMapCallback() {
+                    @Override
+                    public void onSuccess(android.graphics.Bitmap bitmap) {
+                        Log.d(TAG, "Trail map generated, image stored in GPXData");
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void onFailure(String error) {
+                        Log.e(TAG, "Trail map generation failed: " + error);
+                        latch.countDown();
+                    }
+                });
+
+                try { latch.await(); } catch (InterruptedException ignored) {}
+            }
 
             LocalDatabase db = LocalDatabase.getInstance(context);
             UserDao userDao = db.userDao();
@@ -49,6 +72,12 @@ public class ActivityBuilder {
                 activity.setTimestamp(System.currentTimeMillis());
                 activity.setCalories(metrics.calories);
                 activity.setIsChallenge(false);
+
+                // Set trail map image from GPXData if available
+                if (metrics.gpx != null && metrics.gpx.trailMapImage != null) {
+                    activity.setTrailMapImage(metrics.gpx.trailMapImage);
+                    Log.d(TAG, "Trail map image set on activity: " + metrics.gpx.trailMapImage.length + " bytes");
+                }
 
                 activityDao.insert(activity);
 
@@ -104,7 +133,7 @@ public class ActivityBuilder {
                             @Override
                             public void onFailure(String error) { Log.e(TAG, "Splits sync failed: " + error); }
                         }
-                );;
+                );
 
                 // 4. Update User Stats on Supabase
                 UpdateUser.updateStatistics(
@@ -126,7 +155,6 @@ public class ActivityBuilder {
 
                 // 5. Upload GPX File to Supabase Storage
                 UploadGpx gpxUploader = new UploadGpx();
-                // Note: Casting long userId to int as per your UploadGpx signature
                 gpxUploader.upload(context, (int) user.getUserId(), fullPath, new UploadGpx.UploadCallback() {
                     @Override
                     public void onSuccess(String fileUrl) {

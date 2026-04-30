@@ -1,5 +1,7 @@
 package com.example.highpath.Database.Supabase;
 
+import android.util.Log;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -7,10 +9,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CreateUserFolders {
+
+    private static final String TAG = "CreateUserFolders";
 
     private final OkHttpClient client;
     private final String supabaseUrl;
@@ -30,50 +35,52 @@ public class CreateUserFolders {
     }
 
     public void createFolders(String userId, FolderCreationListener listener) {
-        // We use .keep to ensure the folder is visible in Supabase UI
-        String[] paths = {
+        final String[] paths = {
                 userId + "/gpx_files/.keep",
-                userId + "/user_images/.keep"
+                userId + "/user_images/.keep",
+                userId + "/trail_map_images/.keep"
         };
 
+        final int totalPaths = paths.length;
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger failureCount = new AtomicInteger(0);
 
         for (String path : paths) {
             String fullUrl = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + path;
 
-            // Empty body to "create" the file/folder
             RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
 
             Request request = new Request.Builder()
                     .url(fullUrl)
                     .post(body)
                     .addHeader("Authorization", "Bearer " + supabaseKey)
-                    .addHeader("apikey", supabaseKey) // Some setups require the key header separately
+                    .addHeader("apikey", supabaseKey)
                     .addHeader("Content-Type", "text/plain")
                     .build();
 
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    failureCount.incrementAndGet();
-                    if (failureCount.get() == 1) {
+                    Log.e(TAG, "Network error creating folder: " + path + " - " + e.getMessage());
+                    if (failureCount.incrementAndGet() == 1) {
                         listener.onFailure("Network error: " + e.getMessage());
                     }
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
+                    String responseBody = response.body() != null ? response.body().string() : "";
+
                     if (response.isSuccessful()) {
-                        int finished = successCount.incrementAndGet();
-                        if (finished == paths.length) {
+                        Log.d(TAG, "Folder created successfully: " + path);
+                        if (successCount.incrementAndGet() == totalPaths) {
+                            Log.d(TAG, "All folders created successfully");
                             listener.onSuccess();
                         }
                     } else {
-                        // Handle cases like 403 Forbidden (RLS issues) or 409 Conflict
-                        failureCount.incrementAndGet();
-                        if (failureCount.get() == 1) {
-                            listener.onFailure("Supabase error: " + response.code());
+                        Log.e(TAG, "Failed to create folder: " + path + " - " + response.code() + " - " + responseBody);
+                        if (failureCount.incrementAndGet() == 1) {
+                            listener.onFailure("Failed to create folder: " + path + " - " + response.code() + " - " + responseBody);
                         }
                     }
                     response.close();

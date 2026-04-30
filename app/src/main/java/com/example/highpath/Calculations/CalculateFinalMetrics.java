@@ -24,13 +24,14 @@ public class CalculateFinalMetrics {
     public double averagePace = 0.0;
     public double calories = 0.0;
     public List<SplitEntity> splits = new ArrayList<>();
+    public GPXData gpx = null;
 
     public CalculateFinalMetrics() {}
 
     public void calculateMetrics(Context context, String filePath) {
         try {
             // 1. Parse the GPX file into the model
-            GPXData gpx = new GPXParser().parse(filePath);
+            gpx = new GPXParser().parse(filePath);
 
             if (gpx != null && gpx.latitudes.size() >= 2) {
 

@@ -9,4 +9,6 @@ public class GPXData {
     public List<String> timestamps;
 
     public List<Double> correctedElevations;
+
+    public byte[] trailMapImage;
 }

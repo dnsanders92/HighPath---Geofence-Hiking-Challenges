@@ -37,7 +37,7 @@ import com.example.highpath.Database.Entities.UserEntity;
                 TrackPointEntity.class,
                 SplitEntity.class
         },
-        version = 5,
+        version = 6,
         exportSchema = false
 )
 public abstract class LocalDatabase extends RoomDatabase {
@@ -53,7 +53,7 @@ public abstract class LocalDatabase extends RoomDatabase {
     public abstract TrackPointDao trackPointDao();
     public abstract SplitDao splitDao();
 
-    static final Migration MIGRATION_4_5 = new Migration(5, 6) {
+    static final Migration MIGRATION_4_5 = new Migration(4, 5) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             database.execSQL(
