@@ -46,7 +46,7 @@ public class ActivityBuilder {
                 activity.setActualTime(metrics.totalTimeOutside);
                 activity.setGpxFilePath(fullPath);
                 activity.setTimestamp(System.currentTimeMillis());
-                activity.setCalories(1230.0);
+                activity.setCalories(metrics.calories);
                 activity.setIsChallenge(false);
 
                 activityDao.insert(activity);

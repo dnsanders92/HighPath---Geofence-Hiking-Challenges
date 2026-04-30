@@ -22,6 +22,7 @@ public class CalculateFinalMetrics {
     public long totalTimeOutside = 0;
     public long totalTimeMoving = 0;
     public double averagePace = 0.0;
+    public double calories = 0.0;
     public List<SplitEntity> splits = new ArrayList<>();
 
     public CalculateFinalMetrics() {}
@@ -72,6 +73,8 @@ public class CalculateFinalMetrics {
                 // activityId is not known yet — ActivityBuilder sets the ID after insert
                 CalculateSplits calculateSplits = new CalculateSplits();
                 splits = calculateSplits.getSplits("", gpx);
+
+                calories = CalculateCalories.calculate(totalTimeOutside, totalDistanceKM, totalElevationGainM);
 
                 // 7. Check Geofences
                 CheckGeofence geofence = new CheckGeofence();
