@@ -5,11 +5,13 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.example.highpath.R;
 import com.example.highpath.Services.OpenWeatherAPIService;
 import com.example.highpath.Utilities.OpenWeather.FiveDayWeatherData;
 import com.example.highpath.Utilities.OpenWeather.ParseOpenWeather;
+import com.example.highpath.Utilities.OpenWeather.WeatherIcons;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -20,11 +22,12 @@ public class FiveDayForecastFragment extends Fragment {
     private double lat;
     private double lon;
 
-    private TextView d1, d2, d3, d4, d5;
-    private TextView t1, t2, t3, t4, t5;
+    private TextView day1, day2, day3, day4, day5;
+    private TextView temp1, temp2, temp3, temp4, temp5;
+    private ImageView image1, image2, image3, image4, image5;
+    private WeatherIcons iconHelper;
 
-    public FiveDayForecastFragment() {
-    }
+    public FiveDayForecastFragment() {}
 
     public static FiveDayForecastFragment newInstance(double lat, double lon) {
         FiveDayForecastFragment fragment = new FiveDayForecastFragment();
@@ -38,7 +41,7 @@ public class FiveDayForecastFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        iconHelper = new WeatherIcons();
         if (getArguments() != null) {
             lat = getArguments().getDouble("lat", 0);
             lon = getArguments().getDouble("lon", 0);
@@ -46,46 +49,44 @@ public class FiveDayForecastFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_five_day_forecast, container, false);
 
-        d1 = view.findViewById(R.id.dayLabel1);
-        d2 = view.findViewById(R.id.dayLabel2);
-        d3 = view.findViewById(R.id.dayLabel3);
-        d4 = view.findViewById(R.id.dayLabel4);
-        d5 = view.findViewById(R.id.dayLabel5);
+        day1 = view.findViewById(R.id.dayLabel1);
+        day2 = view.findViewById(R.id.dayLabel2);
+        day3 = view.findViewById(R.id.dayLabel3);
+        day4 = view.findViewById(R.id.dayLabel4);
+        day5 = view.findViewById(R.id.dayLabel5);
 
-        t1 = view.findViewById(R.id.tempDay1);
-        t2 = view.findViewById(R.id.tempDay2);
-        t3 = view.findViewById(R.id.tempDay3);
-        t4 = view.findViewById(R.id.tempDay4);
-        t5 = view.findViewById(R.id.tempDay5);
+        temp1 = view.findViewById(R.id.tempDay1);
+        temp2 = view.findViewById(R.id.tempDay2);
+        temp3 = view.findViewById(R.id.tempDay3);
+        temp4 = view.findViewById(R.id.tempDay4);
+        temp5 = view.findViewById(R.id.tempDay5);
+
+        image1 = view.findViewById(R.id.day1);
+        image2 = view.findViewById(R.id.day2);
+        image3 = view.findViewById(R.id.day3);
+        image4 = view.findViewById(R.id.day4);
+        image5 = view.findViewById(R.id.day5);
 
         setDayLabels();
         loadWeather();
-
         return view;
     }
 
     private void setDayLabels() {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("EEE", Locale.UK);
-
-        d1.setText("Today");
-
+        day1.setText("Today");
         cal.add(Calendar.DAY_OF_YEAR, 1);
-        d2.setText(sdf.format(cal.getTime()));
-
+        day2.setText(sdf.format(cal.getTime()));
         cal.add(Calendar.DAY_OF_YEAR, 1);
-        d3.setText(sdf.format(cal.getTime()));
-
+        day3.setText(sdf.format(cal.getTime()));
         cal.add(Calendar.DAY_OF_YEAR, 1);
-        d4.setText(sdf.format(cal.getTime()));
-
+        day4.setText(sdf.format(cal.getTime()));
         cal.add(Calendar.DAY_OF_YEAR, 1);
-        d5.setText(sdf.format(cal.getTime()));
+        day5.setText(sdf.format(cal.getTime()));
     }
 
     private void loadWeather() {
@@ -98,17 +99,23 @@ public class FiveDayForecastFragment extends Fragment {
                         FiveDayWeatherData data = ParseOpenWeather.parse(json);
 
                         if (data.HighLowTemps.size() >= 5) {
-                            t1.setText(data.HighLowTemps.get(0));
-                            t2.setText(data.HighLowTemps.get(1));
-                            t3.setText(data.HighLowTemps.get(2));
-                            t4.setText(data.HighLowTemps.get(3));
-                            t5.setText(data.HighLowTemps.get(4));
+                            temp1.setText(data.HighLowTemps.get(0));
+                            temp2.setText(data.HighLowTemps.get(1));
+                            temp3.setText(data.HighLowTemps.get(2));
+                            temp4.setText(data.HighLowTemps.get(3));
+                            temp5.setText(data.HighLowTemps.get(4));
+
+                            if (data.Conditions != null && data.Conditions.size() >= 5) {
+                                String[] condArray = data.Conditions.toArray(new String[0]);
+                                ImageView[] imageViews = {image1, image2, image3, image4, image5};
+
+                                iconHelper.updateFiveDayForecast(condArray, imageViews);
+                            }
                         }
                     }
 
                     @Override
-                    public void onError(Exception e) {
-                    }
+                    public void onError(Exception e) {}
                 });
     }
 }

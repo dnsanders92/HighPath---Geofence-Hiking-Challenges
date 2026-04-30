@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap; // Added for day sorting
 
 public class ParseOpenWeather {
 
@@ -17,8 +18,10 @@ public class ParseOpenWeather {
             JSONObject root = new JSONObject(json);
             JSONArray list = root.getJSONArray("list");
 
-            Map<String, Double> minMap = new HashMap<>();
-            Map<String, Double> maxMap = new HashMap<>();
+            // Using TreeMap keeps days in order (e.g., Monday, Tuesday...)
+            Map<String, Double> minMap = new TreeMap<>();
+            Map<String, Double> maxMap = new TreeMap<>();
+            Map<String, String> conditionMap = new HashMap<>();
 
             for (int i = 0; i < list.length(); i++) {
                 JSONObject item = list.getJSONObject(i);
@@ -27,12 +30,19 @@ public class ParseOpenWeather {
                 double min = main.getDouble("temp_min");
                 double max = main.getDouble("temp_max");
 
+                // Grab the condition (e.g., "Rain", "Clouds")
+                String condition = item.getJSONArray("weather")
+                        .getJSONObject(0)
+                        .getString("main");
+
                 String dt = item.getString("dt_txt");
                 String day = dt.substring(0, 10);
 
                 if (!minMap.containsKey(day)) {
                     minMap.put(day, min);
                     maxMap.put(day, max);
+                    // Store the first condition we see for that day
+                    conditionMap.put(day, condition);
                 } else {
                     minMap.put(day, Math.min(minMap.get(day), min));
                     maxMap.put(day, Math.max(maxMap.get(day), max));
@@ -45,11 +55,14 @@ public class ParseOpenWeather {
                 String d = days.get(i);
                 data.LowTemps.add(minMap.get(d));
                 data.HighTemps.add(maxMap.get(d));
+                // Add the stored condition to your list
+                data.Conditions.add(conditionMap.get(d));
             }
 
             data.buildHighLowStrings();
 
         } catch (Exception e) {
+            // Log error if needed
         }
 
         return data;

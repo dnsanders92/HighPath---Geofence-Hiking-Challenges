@@ -12,7 +12,8 @@
         android:background="@drawable/forecast_outer_bg"
         android:padding="10dp"
         android:layout_margin="12dp"
-        android:weightSum="5">
+        android:weightSum="5"
+        android:baselineAligned="false">
 
         <!-- Day 1 -->
         <LinearLayout
@@ -42,7 +43,11 @@
                 android:id="@+id/day1"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:src="@drawable/sun"
+                android:scaleType="centerInside"
+                android:scaleX="1.4"
+                android:scaleY="1.4"
+                android:adjustViewBounds="true"
+                android:src="@drawable/weather_icon_cloudy"
                 android:layout_marginBottom="8dp" />
 
             <TextView
@@ -85,7 +90,11 @@
                 android:id="@+id/day2"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:src="@drawable/sun"
+                android:scaleType="centerInside"
+                android:scaleX="1.4"
+                android:scaleY="1.4"
+                android:adjustViewBounds="true"
+                android:src="@drawable/weather_icon_cloudy"
                 android:layout_marginBottom="8dp" />
 
             <TextView
@@ -128,7 +137,11 @@
                 android:id="@+id/day3"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:src="@drawable/sun"
+                android:scaleType="centerInside"
+                android:scaleX="1.4"
+                android:scaleY="1.4"
+                android:adjustViewBounds="true"
+                android:src="@drawable/weather_icon_cloudy"
                 android:layout_marginBottom="8dp" />
 
             <TextView
@@ -171,7 +184,11 @@
                 android:id="@+id/day4"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:src="@drawable/sun"
+                android:scaleType="centerInside"
+                android:scaleX="1.4"
+                android:scaleY="1.4"
+                android:adjustViewBounds="true"
+                android:src="@drawable/weather_icon_cloudy"
                 android:layout_marginBottom="8dp" />
 
             <TextView
@@ -213,7 +230,11 @@
                 android:id="@+id/day5"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:src="@drawable/sun"
+                android:scaleType="centerInside"
+                android:scaleX="1.4"
+                android:scaleY="1.4"
+                android:adjustViewBounds="true"
+                android:src="@drawable/weather_icon_cloudy"
                 android:layout_marginBottom="8dp" />
 
             <TextView
