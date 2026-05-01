@@ -19,9 +19,6 @@ public class CreateUser {
         void onFailure(String error);
     }
 
-    /**
-     * Step 1: Register Email/Password with Supabase Auth
-     */
     public static void signUp(
             Context context,
             String email,
@@ -63,8 +60,7 @@ public class CreateUser {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    // Auth success! Now proceed to create the public profile record
-                    addUser(context, firstName, surname, monthOfBirth, yearOfBirth, 0, 0, 0, 0, 0L, 0L, callback);
+                    addUser(context, email, firstName, surname, monthOfBirth, yearOfBirth, 0, 0, 0, 0, 0L, 0L, callback);
                 } else {
                     String error = response.body() != null ? response.body().string() : "Unknown Auth Error";
                     callback.onFailure("Auth Failed: " + error);
@@ -74,11 +70,9 @@ public class CreateUser {
         });
     }
 
-    /**
-     * Step 2: Add User Profile to Public Table
-     */
     public static void addUser(
             Context context,
+            String email,
             String firstName,
             String surname,
             String monthOfBirth,
@@ -99,6 +93,7 @@ public class CreateUser {
 
         JSONObject json = new JSONObject();
         try {
+            json.put("email", email);
             json.put("first_name", firstName);
             json.put("surname", surname);
             json.put("month_of_birth", monthOfBirth);

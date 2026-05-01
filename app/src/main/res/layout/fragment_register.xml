@@ -23,13 +23,12 @@
             android:gravity="center_horizontal"
             android:layout_marginBottom="36dp">
 
-            <TextView
+            <ImageView
                 android:layout_width="72dp"
                 android:layout_height="72dp"
-                android:gravity="center"
-                android:text="⛰"
-                android:textSize="38sp"
+                android:src="@drawable/highpath_logo"
                 android:background="@drawable/circle_accent_bg"
+                android:padding="16dp"
                 android:layout_marginBottom="20dp" />
 
             <TextView
@@ -355,48 +354,9 @@
             app:elevation="0dp"
             android:stateListAnimator="@null" />
 
-        <!-- Divider -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="12dp">
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"
-                android:background="#F0F0F0" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="  Already have an account?  "
-                android:textColor="#B0B0B0"
-                android:textSize="12sp" />
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"
-                android:background="#F0F0F0" />
-
-        </LinearLayout>
-
-        <!-- Sign In secondary button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/goToLoginButton"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Sign In"
-            android:textColor="#0F6E56"
-            android:textSize="14sp"
-            app:cornerRadius="12dp"
-            app:strokeColor="#F0F0F0"
-            app:strokeWidth="1dp" />
 
     </LinearLayout>
 </ScrollView>

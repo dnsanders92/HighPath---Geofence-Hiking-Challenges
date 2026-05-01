@@ -27,7 +27,6 @@ public class CheckGeofence {
 
             if (allSummits == null || allSummits.isEmpty()) return;
 
-            // Get user ID for Supabase sync
             UserEntity user = db.userDao().getSingleUser();
             int userId = user != null ? (int) user.getUserId() : -1;
 
@@ -85,17 +84,17 @@ public class CheckGeofence {
                 });
             }
 
-            // 4. Update the parent challenge progress
+            // 4. Increment challenge progress by 1
             ChallengesEntity challenge = db.challengesDao().getChallengeById(item.getChallengeId());
             if (challenge != null) {
-                int completed = db.challengeItemDao().getCompletedCountForChallenge(item.getChallengeId());
+                challenge.setCompletedSummits(challenge.getCompletedSummits() + 1);
                 int total = db.challengeItemDao().getTotalCountForChallenge(item.getChallengeId());
-                challenge.setCompletedSummits(completed);
-                if (completed >= total) {
+                if (challenge.getCompletedSummits() >= total) {
                     challenge.setCompleted(true);
                 }
                 db.challengesDao().updateChallenge(challenge);
-                Log.d("GEOFENCE", "Updated challenge: " + challenge.getChallengeName());
+                Log.d("GEOFENCE", "Updated challenge: " + challenge.getChallengeName()
+                        + " " + challenge.getCompletedSummits() + "/" + total);
             }
         }
     }

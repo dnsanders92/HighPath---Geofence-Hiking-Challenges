@@ -64,45 +64,30 @@ public class SyncTrailMapImages {
                     JSONObject file = files.getJSONObject(i);
                     String fileName = file.getString("name");
 
-                    // Skip .keep placeholder files
                     if (fileName.equals(".keep")) continue;
 
-                    // Filename is activityId.png — strip extension to get activityId
                     String activityId = fileName.replace(".png", "");
                     Log.d(TAG, "Downloading image for activity: " + activityId);
 
-                    // 3. Download the image
                     String imageUrl = "https://" + projectId + ".supabase.co/storage/v1/object/user-data/"
                             + userId + "/trail_map_images/" + fileName;
 
-                    URL imgUrl = new URL(imageUrl);
-                    HttpURLConnection imgConn = (HttpURLConnection) imgUrl.openConnection();
-                    imgConn.setRequestMethod("GET");
-                    imgConn.setRequestProperty("apikey", supabaseKey);
-                    imgConn.setRequestProperty("Authorization", "Bearer " + supabaseKey);
-                    imgConn.setConnectTimeout(15000);
-                    imgConn.setReadTimeout(15000);
+                    byte[] imageBytes = attemptDownload(imageUrl, supabaseKey);
 
-                    int imgResponseCode = imgConn.getResponseCode();
-                    Log.d(TAG, "Image download response: " + imgResponseCode);
-
-                    if (imgResponseCode == 200) {
-                        InputStream is = imgConn.getInputStream();
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = is.read(buffer)) != -1) {
-                            baos.write(buffer, 0, bytesRead);
-                        }
-                        byte[] imageBytes = baos.toByteArray();
-                        is.close();
-
-                        // 4. Update the activity in local DB
+                    if (imageBytes != null) {
                         db.activityDao().updateTrailMapImage(activityId, imageBytes);
                         Log.d(TAG, "Saved image for activity: " + activityId + " (" + imageBytes.length + " bytes)");
+                    } else {
+                        // Retry once
+                        Log.w(TAG, "First attempt failed for " + activityId + " — retrying...");
+                        imageBytes = attemptDownload(imageUrl, supabaseKey);
+                        if (imageBytes != null) {
+                            db.activityDao().updateTrailMapImage(activityId, imageBytes);
+                            Log.d(TAG, "Retry succeeded for activity: " + activityId);
+                        } else {
+                            Log.e(TAG, "Retry failed for activity: " + activityId);
+                        }
                     }
-
-                    imgConn.disconnect();
                 }
 
                 Log.d(TAG, "Trail map image sync complete.");
@@ -111,5 +96,40 @@ public class SyncTrailMapImages {
                 Log.e(TAG, "Failed to sync trail map images", e);
             }
         }).start();
+    }
+
+    private static byte[] attemptDownload(String imageUrl, String supabaseKey) {
+        try {
+            URL imgUrl = new URL(imageUrl);
+            HttpURLConnection imgConn = (HttpURLConnection) imgUrl.openConnection();
+            imgConn.setRequestMethod("GET");
+            imgConn.setRequestProperty("apikey", supabaseKey);
+            imgConn.setRequestProperty("Authorization", "Bearer " + supabaseKey);
+            imgConn.setConnectTimeout(15000);
+            imgConn.setReadTimeout(15000);
+
+            int imgResponseCode = imgConn.getResponseCode();
+            Log.d(TAG, "Image download response: " + imgResponseCode);
+
+            if (imgResponseCode == 200) {
+                InputStream is = imgConn.getInputStream();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    baos.write(buffer, 0, bytesRead);
+                }
+                is.close();
+                imgConn.disconnect();
+                return baos.toByteArray();
+            }
+
+            imgConn.disconnect();
+            return null;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Download attempt failed: " + e.getMessage());
+            return null;
+        }
     }
 }
