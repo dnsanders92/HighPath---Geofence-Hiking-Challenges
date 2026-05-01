@@ -39,19 +39,20 @@ public class TrailSummaryFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_trail_summary, container, false);
 
-        // connect ui
-        trailMap       = view.findViewById(R.id.trailMapImage);
-        txtName        = view.findViewById(R.id.trailName);
-        txtRegion      = view.findViewById(R.id.trailRegion);
-        txtDifficulty  = view.findViewById(R.id.trailDifficulty);
-        txtDistance    = view.findViewById(R.id.trailDistance);
-        txtAscent      = view.findViewById(R.id.trailAscent);
-        txtDescription = view.findViewById(R.id.trailDescription);
+        // Connect UI components
+        trailMap        = view.findViewById(R.id.trailMapImage);
+        txtName         = view.findViewById(R.id.trailName);
+        txtRegion       = view.findViewById(R.id.trailRegion);
+        txtDifficulty   = view.findViewById(R.id.trailDifficulty);
+        txtDistance     = view.findViewById(R.id.trailDistance);
+        txtAscent       = view.findViewById(R.id.trailAscent);
+        txtDescription  = view.findViewById(R.id.trailDescription);
 
+        // Navigate to map on click
         trailMap.setOnClickListener(v -> {
             if (trailId != null) {
                 navigateToMap(trailId);
@@ -67,19 +68,24 @@ public class TrailSummaryFragment extends Fragment {
         loadTrailData();
     }
 
-    // open trail map
+    /**
+     * Replaces current fragment with the TrailMapFragment
+     */
     private void navigateToMap(String id) {
         TrailMapFragment mapFragment = new TrailMapFragment();
         Bundle bundle = new Bundle();
         bundle.putString("TRAIL_ID", id);
         mapFragment.setArguments(bundle);
+
         getParentFragmentManager().beginTransaction()
                 .replace(R.id.container, mapFragment)
                 .addToBackStack(null)
                 .commit();
     }
 
-    // load trail data
+    /**
+     * Fetches trail details from Room DB and updates UI
+     */
     private void loadTrailData() {
         if (trailId == null) return;
 
@@ -89,21 +95,24 @@ public class TrailSummaryFragment extends Fragment {
 
             new Handler(Looper.getMainLooper()).post(() -> {
                 if (isAdded() && trail != null) {
+                    // Basic Info
                     txtName.setText(trail.getName().toUpperCase());
                     txtRegion.setText(trail.getRegion().toUpperCase());
                     txtDistance.setText(trail.getDistanceKm() + " km");
                     txtAscent.setText(trail.getAscentM() + " m");
                     setDifficultyChip(trail.getDifficulty());
 
-                    // Load preview image
-                    byte[] previewBytes = trail.getThumbnail();
-                    if (previewBytes != null && previewBytes.length > 0) {
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(previewBytes, 0, previewBytes.length);
+                    // Load Image Blob from DB
+                    byte[] thumbnailBlob = trail.getThumbnail();
+                    if (thumbnailBlob != null && thumbnailBlob.length > 0) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(thumbnailBlob, 0, thumbnailBlob.length);
                         if (bitmap != null) {
                             trailMap.setImageBitmap(bitmap);
+                            trailMap.setScaleType(android.widget.ImageButton.ScaleType.CENTER_CROP);
                         }
                     }
 
+                    // Description handling
                     String description = trail.getDescription();
                     if (description != null && !description.isEmpty()) {
                         txtDescription.setVisibility(View.VISIBLE);
@@ -112,13 +121,16 @@ public class TrailSummaryFragment extends Fragment {
                         txtDescription.setVisibility(View.GONE);
                     }
 
+                    // Load nested Weather Fragment
                     loadWeatherFragment(trail.getCenterLat(), trail.getCenterLon());
                 }
             });
         });
     }
 
-    // set difficulty colour on ui
+    /**
+     * Sets the text and background color of the difficulty TextView
+     */
     private void setDifficultyChip(String difficulty) {
         if (difficulty == null) return;
 
@@ -150,8 +162,11 @@ public class TrailSummaryFragment extends Fragment {
 
         txtDifficulty.setText(difficulty.toUpperCase());
         txtDifficulty.setTextColor(Color.parseColor(textColor));
+
         GradientDrawable bg = (GradientDrawable) txtDifficulty.getBackground();
-        bg.setColor(Color.parseColor(bgColor));
+        if (bg != null) {
+            bg.setColor(Color.parseColor(bgColor));
+        }
     }
 
     private void loadWeatherFragment(double lat, double lon) {

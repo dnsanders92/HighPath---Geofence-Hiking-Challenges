@@ -27,19 +27,14 @@ public class LoadMapBox {
 
     public LoadMapBox() {}
 
-    /**
-     * Initializes the MapBox instance with a specific style and optional user puck.
-     * @param styleUri The MapBox Style URI (e.g., Style.OUTDOORS or Style.SATELLITE_STREETS)
-     */
     public void initializeMap(@NonNull Context context,
                               @NonNull final MapView mapView,
-                              @NonNull final String styleUri,
                               final boolean enablePuck,
                               @Nullable final Double centerLat,
                               @Nullable final Double centerLon) {
 
         mapView.getMapboxMap().loadStyleUri(
-                styleUri,
+                Style.OUTDOORS,
                 style -> {
                     if (!hasCenteredOnce) {
                         centreMap(mapView, centerLat, centerLon);

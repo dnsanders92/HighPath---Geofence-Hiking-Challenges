@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.Button;
 
 import com.example.highpath.Activities.MainActivity;
 import com.example.highpath.Fragments.OtherFragments.RecordingPanelFragment;
@@ -30,7 +30,6 @@ import com.mapbox.maps.CameraOptions;
 import com.mapbox.maps.CoordinateBounds;
 import com.mapbox.maps.EdgeInsets;
 import com.mapbox.maps.MapView;
-import com.mapbox.maps.Style;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,18 +39,19 @@ public class RecordFragment extends Fragment {
     private MapView mapView;
     private DrawLivePolyline drawLivePolyline;
     private final Handler liveHandler = new Handler(Looper.getMainLooper());
-    private boolean isSatellite = false;
 
     private final Runnable liveUpdateRunnable = new Runnable() {
         @Override
         public void run() {
             if (!isAdded() || mapView == null) return;
 
+            // Update polyline
             LiveTrackManager manager = LiveTrackManager.getInstance();
             if (drawLivePolyline != null && manager.hasPoints()) {
                 drawLivePolyline.update(manager.getLatitudes(), manager.getLongitudes());
             }
 
+            // Follow user puck
             if (getActivity() instanceof MainActivity) {
                 MainActivity main = (MainActivity) getActivity();
                 double currentLat = main.getLatitude();
@@ -84,16 +84,13 @@ public class RecordFragment extends Fragment {
             lon = main.getLongitude();
         }
 
-        // Determine starting style based on toggle state
-        String currentStyle = isSatellite ? Style.SATELLITE_STREETS : Style.OUTDOORS;
-
         if (TrailData.hasData()) {
             double startLat = TrailData.latitudes.get(0);
             double startLon = TrailData.longitudes.get(0);
-            mapLoader.initializeMap(requireContext(), mapView, currentStyle, true, startLat, startLon);
+            mapLoader.initializeMap(requireContext(), mapView, true, startLat, startLon);
             drawLoadedTrail();
         } else {
-            mapLoader.initializeMap(requireContext(), mapView, currentStyle, true, lat, lon);
+            mapLoader.initializeMap(requireContext(), mapView, true, lat, lon);
         }
 
         mapView.getMapboxMap().getStyle(style -> {
@@ -167,20 +164,6 @@ public class RecordFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ImageButton toggleMap = view.findViewById(R.id.btnToggleStyle);
-        toggleMap.setOnClickListener(v -> {
-            if (mapView != null) {
-                isSatellite = !isSatellite;
-                String styleUri = isSatellite ? Style.SATELLITE_STREETS : Style.OUTDOORS;
-
-                mapView.getMapboxMap().loadStyleUri(styleUri, style -> {
-                    // Re-initialize 3D terrain and polylines for the new style
-                    new LoadMapBox().initializeMap(requireContext(), mapView, styleUri, true, null, null);
-                    drawLivePolyline.initialize(style);
-                    if (TrailData.hasData()) drawLoadedTrail();
-                });
-            }
-        });
     }
 
     @SuppressLint("Lifecycle")
