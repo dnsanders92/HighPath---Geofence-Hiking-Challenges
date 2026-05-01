@@ -33,7 +33,7 @@
                 <ImageView
                     android:id="@+id/bannerImage"
                     android:layout_width="match_parent"
-                    android:layout_height="190dp"
+                    android:layout_height="220dp"
                     android:scaleType="centerCrop"
                     android:adjustViewBounds="true" />
 
@@ -42,15 +42,33 @@
                     android:layout_height="match_parent"
                     android:gravity="bottom|center_horizontal">
 
-                    <com.google.android.material.imageview.ShapeableImageView
-                        android:id="@+id/profileImage"
+                    <!-- Profile image + upload button wrapper -->
+                    <FrameLayout
                         android:layout_width="200dp"
-                        android:layout_height="200dp"
-                        android:padding="5dp"
-                        android:scaleType="centerCrop"
-                        app:shapeAppearanceOverlay="@style/CircleImageStyle"
-                        app:strokeColor="#3A3A3A"
-                        app:strokeWidth="5dp" />
+                        android:layout_height="200dp">
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/profileImage"
+                            android:layout_width="200dp"
+                            android:layout_height="200dp"
+                            android:padding="5dp"
+                            android:scaleType="centerCrop"
+                            app:shapeAppearanceOverlay="@style/CircleImageStyle"
+                            app:strokeColor="#3A3A3A"
+                            app:strokeWidth="5dp" />
+
+                        <ImageButton
+                            android:id="@+id/btnUploadProfile"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_gravity="bottom|end"
+                            android:background="@drawable/rounded_corners_container"
+                            android:elevation="4dp"
+                            android:padding="5dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/upload_icon" />
+
+                    </FrameLayout>
 
                 </LinearLayout>
             </FrameLayout>
@@ -170,7 +188,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- ROW 2: Longest Distance + Most Elevation Gain (MOVED UP) -->
+            <!-- ROW 2: Longest Distance + Most Elevation Gain -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
