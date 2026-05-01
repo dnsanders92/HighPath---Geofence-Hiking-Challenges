@@ -29,6 +29,11 @@ public class SyncActivities {
         void onFailure(String error);
     }
 
+    public interface ChallengeItemSyncCallback {
+        void onSuccess(JSONArray items);
+        void onFailure(String error);
+    }
+
     public static void fetchUserActivities(Context context, int userId, ActivitySyncCallback callback) {
         String projectId = context.getString(R.string.supabase_project_id);
         String apiKey = context.getString(R.string.supabase_api_key);
@@ -103,6 +108,48 @@ public class SyncActivities {
                     } catch (Exception e) {
                         Log.e(TAG, "JSON Parse Error: " + responseBody);
                         callback.onFailure("Failed to parse splits");
+                    }
+                } else {
+                    Log.e(TAG, "Supabase Error " + response.code() + ": " + responseBody);
+                    callback.onFailure("Server error: " + response.code());
+                }
+                response.close();
+            }
+        });
+    }
+
+    public static void fetchCompletedChallengeItems(Context context, int userId, ChallengeItemSyncCallback callback) {
+        String projectId = context.getString(R.string.supabase_project_id);
+        String apiKey = context.getString(R.string.supabase_api_key);
+
+        String url = "https://" + projectId + ".supabase.co/rest/v1/challenge_items?user_id=eq." + userId + "&is_completed=eq.true&select=*";
+
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("apikey", apiKey)
+                .addHeader("Authorization", "Bearer " + apiKey)
+                .get()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onFailure("Network failure: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String responseBody = response.body() != null ? response.body().string() : "";
+
+                if (response.isSuccessful()) {
+                    try {
+                        JSONArray array = new JSONArray(responseBody);
+                        Log.d(TAG, "Cloud returned " + array.length() + " completed challenge items.");
+                        callback.onSuccess(array);
+                    } catch (Exception e) {
+                        Log.e(TAG, "JSON Parse Error: " + responseBody);
+                        callback.onFailure("Failed to parse challenge items");
                     }
                 } else {
                     Log.e(TAG, "Supabase Error " + response.code() + ": " + responseBody);

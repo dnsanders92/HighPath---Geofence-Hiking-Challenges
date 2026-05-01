@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import com.example.highpath.Database.Entities.ActivityEntity;
+import com.example.highpath.Database.Entities.ChallengesEntity;
 import com.example.highpath.Database.Entities.SplitEntity;
 import com.example.highpath.Database.Entities.UserEntity;
 import com.example.highpath.Database.LocalDatabase;
@@ -81,6 +82,48 @@ public class CreateLocalUser {
                 Log.d(TAG, "Splits Sync Complete.");
             } catch (Exception e) {
                 Log.e(TAG, "Error saving splits to Room: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    public static void syncChallengeItemsToLocal(final Context context, JSONArray itemsArray) {
+        new Thread(() -> {
+            try {
+                LocalDatabase db = LocalDatabase.getInstance(context);
+                Log.d(TAG, "Processing " + itemsArray.length() + " completed challenge items.");
+
+                for (int i = 0; i < itemsArray.length(); i++) {
+                    JSONObject obj = itemsArray.getJSONObject(i);
+                    int summitId = obj.getInt("summit_id");
+                    int challengeId = obj.getInt("challenge_id");
+
+                    Log.d(TAG, "Processing item - summitId: " + summitId + " challengeId: " + challengeId);
+
+                    // Mark the challenge_item completed locally
+                    db.challengeItemDao().markSummitCompleted(summitId);
+
+                    // Mark the summit itself completed
+                    db.summitsDao().markSummitCompleted(summitId);
+
+                    // Increment completed summits count by 1 on the challenge
+                    ChallengesEntity challenge = db.challengesDao().getChallengeById(challengeId);
+                    Log.d(TAG, "Challenge lookup for id " + challengeId + ": " + (challenge == null ? "NULL" : challenge.getChallengeName() + " current count: " + challenge.getCompletedSummits()));
+
+                    if (challenge != null) {
+                        challenge.setCompletedSummits(challenge.getCompletedSummits() + 1);
+                        if (challenge.getCompletedSummits() >= challenge.getTotalSummits()) {
+                            challenge.setCompleted(true);
+                        }
+                        db.challengesDao().updateChallenge(challenge);
+                        Log.d(TAG, "Challenge " + challenge.getChallengeName() + " updated to: "
+                                + challenge.getCompletedSummits() + "/" + challenge.getTotalSummits());
+                    }
+                }
+
+                Log.d(TAG, "Challenge Items Sync Complete.");
+            } catch (Exception e) {
+                Log.e(TAG, "Error saving challenge items to Room: " + e.getMessage());
                 e.printStackTrace();
             }
         }).start();

@@ -22,17 +22,15 @@ public interface ChallengesDao {
     @Query("SELECT * FROM challenges WHERE challenge_id = :id LIMIT 1")
     ChallengesEntity getChallengeById(int id);
 
-    // --- ADD THESE TWO METHODS BELOW ---
-
-    /**
-     * Finds the challenge row that matches the summit's region (e.g., "Ulster").
-     */
     @Query("SELECT * FROM challenges WHERE region = :regionName LIMIT 1")
     ChallengesEntity getChallengeByRegion(String regionName);
 
-    /**
-     * Saves the updated 'completed_summits' count back to the database.
-     */
     @Update
     void updateChallenge(ChallengesEntity challenge);
+
+    @Query("UPDATE challenges SET completed_summits = :count WHERE challenge_id = :challengeId")
+    void updateCompletedSummits(int challengeId, int count);
+
+    @Query("UPDATE challenges SET is_completed = 1 WHERE challenge_id = :challengeId")
+    void markChallengeCompleted(int challengeId);
 }

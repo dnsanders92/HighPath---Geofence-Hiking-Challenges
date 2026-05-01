@@ -14,7 +14,6 @@ public class ChallengesEntity {
     @ColumnInfo(name = "challenge_name")
     private String challengeName;
 
-    // Added region to match the province in SummitsEntity
     @ColumnInfo(name = "region")
     private String region;
 
