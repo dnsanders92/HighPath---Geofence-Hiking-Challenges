@@ -63,7 +63,6 @@
                             android:layout_height="32dp"
                             android:layout_gravity="bottom|end"
                             android:background="@drawable/rounded_corners_container"
-                            android:elevation="4dp"
                             android:padding="5dp"
                             android:scaleType="fitCenter"
                             android:src="@drawable/upload_icon" />

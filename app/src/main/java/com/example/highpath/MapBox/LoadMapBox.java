@@ -19,11 +19,13 @@ import com.mapbox.maps.plugin.locationcomponent.LocationComponentUtils;
 
 public class LoadMapBox {
 
-    private boolean hasCenteredOnce = false;
-
     private static final double DEFAULT_ZOOM    = 17.0;
     private static final double DEFAULT_PITCH   = 0.0;
     private static final double DEFAULT_BEARING = 0.0;
+
+    // Errigal default coordinates
+    private static final double ERRIGAL_LAT = 55.0343;
+    private static final double ERRIGAL_LON = -8.113;
 
     public LoadMapBox() {}
 
@@ -36,10 +38,8 @@ public class LoadMapBox {
         mapView.getMapboxMap().loadStyleUri(
                 Style.OUTDOORS,
                 style -> {
-                    if (!hasCenteredOnce) {
-                        centreMap(mapView, centerLat, centerLon);
-                        hasCenteredOnce = true;
-                    }
+                    // set camera only after style is ready
+                    centreMap(mapView, centerLat, centerLon);
 
                     add3DTerrain(style);
 
@@ -51,40 +51,20 @@ public class LoadMapBox {
     }
 
     public void centreMap(MapView mapView, Double centerLat, Double centerLon) {
-        if (centerLat != null && centerLon != null) {
-            Point centerPoint = Point.fromLngLat(centerLon, centerLat);
+        // fall back to Errigal if no coordinates provided
+        double lat = (centerLat != null && centerLat != 0.0) ? centerLat : ERRIGAL_LAT;
+        double lon = (centerLon != null && centerLon != 0.0) ? centerLon : ERRIGAL_LON;
 
-            mapView.getMapboxMap().setCamera(
-                    new CameraOptions.Builder()
-                            .center(centerPoint)
-                            .zoom(DEFAULT_ZOOM)
-                            .pitch(DEFAULT_PITCH)
-                            .bearing(DEFAULT_BEARING)
-                            .build()
-            );
-        }
-    }
+        Point centerPoint = Point.fromLngLat(lon, lat);
 
-    public void centreMapAnimated(MapView mapView, Double centerLat, Double centerLon) {
-        if (centerLat != null && centerLon != null) {
-            Point centerPoint = Point.fromLngLat(centerLon, centerLat);
-
-            CameraAnimationsPlugin cameraAnimations =
-                    CameraAnimationsUtils.getCamera(mapView);
-
-            cameraAnimations.easeTo(
-                    new CameraOptions.Builder()
-                            .center(centerPoint)
-                            .zoom(DEFAULT_ZOOM)
-                            .pitch(DEFAULT_PITCH)
-                            .bearing(DEFAULT_BEARING)
-                            .build(),
-                    new MapAnimationOptions.Builder()
-                            .duration(1800L)
-                            .build(),
-                    null
-            );
-        }
+        mapView.getMapboxMap().setCamera(
+                new CameraOptions.Builder()
+                        .center(centerPoint)
+                        .zoom(DEFAULT_ZOOM)
+                        .pitch(DEFAULT_PITCH)
+                        .bearing(DEFAULT_BEARING)
+                        .build()
+        );
     }
 
     private void add3DTerrain(@NonNull Style style) {
