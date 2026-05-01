@@ -52,6 +52,7 @@ public class FiveDayForecastFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_five_day_forecast, container, false);
 
+        // connect ui
         day1 = view.findViewById(R.id.dayLabel1);
         day2 = view.findViewById(R.id.dayLabel2);
         day3 = view.findViewById(R.id.dayLabel3);
@@ -75,6 +76,7 @@ public class FiveDayForecastFragment extends Fragment {
         return view;
     }
 
+    // set days
     private void setDayLabels() {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("EEE", Locale.UK);
@@ -89,6 +91,7 @@ public class FiveDayForecastFragment extends Fragment {
         day5.setText(sdf.format(cal.getTime()));
     }
 
+    // load temps and weather icons
     private void loadWeather() {
         OpenWeatherAPIService.getFiveDayForecast(requireContext(), lat, lon,
                 new OpenWeatherAPIService.WeatherCallback() {

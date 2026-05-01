@@ -21,12 +21,15 @@ public class UploadTrailMap {
     public static void upload(Context context, int userId, String activityId, byte[] imageBytes, UploadCallback callback) {
         new Thread(() -> {
             try {
+                // supabase connections
                 String supabaseKey = context.getString(R.string.supabase_api_key);
                 String projectId = context.getString(R.string.supabase_project_id);
 
+                // file path
                 String path = userId + "/trail_map_images/" + activityId + ".png";
                 String urlStr = "https://" + projectId + ".supabase.co/storage/v1/object/user-data/" + path;
 
+                // open connection
                 URL url = new URL(urlStr);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
@@ -35,24 +38,28 @@ public class UploadTrailMap {
                 conn.setRequestProperty("Authorization", "Bearer " + supabaseKey);
                 conn.setDoOutput(true);
 
+                // send bytes
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(imageBytes);
                 }
 
+                // read response
                 int responseCode = conn.getResponseCode();
-                Log.d(TAG, "Response code: " + responseCode);
+                Log.d(TAG, "response code: " + responseCode);
 
                 if (responseCode == 200 || responseCode == 201) {
-                    Log.d(TAG, "Trail map uploaded: " + urlStr);
+                    // success
+                    Log.d(TAG, "trail map uploaded: " + urlStr);
                     callback.onSuccess(urlStr);
                 } else {
-                    callback.onFailure("Response code: " + responseCode);
+                    // supabase returned error
+                    callback.onFailure("response code: " + responseCode);
                 }
 
                 conn.disconnect();
 
             } catch (Exception e) {
-                Log.e(TAG, "Failed to upload trail map", e);
+                Log.e(TAG, "failed to upload trail map", e);
                 callback.onFailure(e.getMessage());
             }
         }).start();

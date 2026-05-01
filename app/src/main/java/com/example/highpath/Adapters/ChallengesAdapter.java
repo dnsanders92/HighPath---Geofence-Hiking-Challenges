@@ -17,7 +17,7 @@ import java.util.List;
 
 public class ChallengesAdapter extends BaseAdapter {
 
-    private List<ChallengesEntity> challenges; // Removed final
+    private List<ChallengesEntity> challenges;
     private final LayoutInflater inflater;
 
     public ChallengesAdapter(Context context, List<ChallengesEntity> challenges) {
@@ -25,7 +25,7 @@ public class ChallengesAdapter extends BaseAdapter {
         this.inflater = LayoutInflater.from(context);
     }
 
-    // Method to refresh the list when searching
+    // refresh list
     public void updateList(List<ChallengesEntity> newList) {
         this.challenges = newList;
         notifyDataSetChanged();
@@ -35,37 +35,43 @@ public class ChallengesAdapter extends BaseAdapter {
     public int getCount() { return challenges.size(); }
 
     @Override
-    public Object getItem(int position) { return challenges.get(position); }
+    public ChallengesEntity getItem(int position) { return challenges.get(position); }
 
     @Override
     public long getItemId(int position) { return position; }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+
         ViewHolder holder;
 
+        // connect views
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.challenges_list_item, parent, false);
             holder = new ViewHolder();
-            holder.challengeName = convertView.findViewById(R.id.challengeName);
+
+            holder.challengeName        = convertView.findViewById(R.id.challengeName);
             holder.challengeDescription = convertView.findViewById(R.id.challengeDescription);
             holder.challengeProgressText = convertView.findViewById(R.id.challengeProgressText);
-            holder.challengeImage = convertView.findViewById(R.id.challengeImage);
+            holder.challengeImage       = convertView.findViewById(R.id.challengeImage);
+
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        ChallengesEntity c = challenges.get(position);
+        ChallengesEntity challengesEntity = challenges.get(position);
 
-        holder.challengeName.setText(c.getChallengeName());
-        holder.challengeDescription.setText(c.getShortDescription());
+        // set text fields
+        holder.challengeName.setText(challengesEntity.getChallengeName());
+        holder.challengeDescription.setText(challengesEntity.getShortDescription());
 
-        String progress = c.getCompletedSummits() + " / " + c.getTotalSummits();
+        String progress = challengesEntity.getCompletedSummits() + " / " + challengesEntity.getTotalSummits();
         holder.challengeProgressText.setText(progress);
 
-        if (c.getChallengeThumbnail() != null) {
-            byte[] imageBytes = c.getChallengeThumbnail();
+        // load image from database blob
+        byte[] imageBytes = challengesEntity.getChallengeThumbnail();
+        if (imageBytes != null && imageBytes.length > 0) {
             Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
             holder.challengeImage.setImageBitmap(bitmap);
         }

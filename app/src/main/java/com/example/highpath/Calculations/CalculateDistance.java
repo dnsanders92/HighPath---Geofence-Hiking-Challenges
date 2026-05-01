@@ -6,6 +6,7 @@ public class CalculateDistance {
 
     private static final double R = 6371.0;
 
+    // equirectangular distance between two lat/lon points
     public static double equirectangular(double previousLat, double previousLon,
                                          double currentLat, double currentLon) {
 
@@ -20,28 +21,28 @@ public class CalculateDistance {
         return R * Math.sqrt(x * x + y * y);
     }
 
+    // total distance across all points
     public static double totalDistance(List<Double> latitudes, List<Double> longitudes) {
         double totalDistanceKM = 0;
 
-        // Safety check: ensure lists aren't null and have at least 2 points
+        // validation
         if (latitudes == null || longitudes == null || latitudes.size() < 2) {
             return 0.0;
         }
 
+        // loop through all segments
         for (int i = 1; i < latitudes.size(); i++) {
 
-            // Correctly reference the PREVIOUS point
             double prevLat = latitudes.get(i - 1);
             double prevLon = longitudes.get(i - 1);
 
-            // Correctly reference the CURRENT point
             double currLat = latitudes.get(i);
             double currLon = longitudes.get(i);
 
             totalDistanceKM += equirectangular(prevLat, prevLon, currLat, currLon);
         }
 
-        // Round to 2 decimal places before returning
+        // round to 2 decimals
         return Math.round(totalDistanceKM * 100.0) / 100.0;
     }
 }

@@ -10,7 +10,6 @@ public class GpxBuilder {
     private final String filePath;
     private final String fileName;
 
-    // Constructor stores the path and name for all methods to use
     public GpxBuilder(String filePath, String fileName) {
         this.filePath = filePath;
         this.fileName = fileName;

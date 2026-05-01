@@ -31,7 +31,6 @@ public class TimeRunnable implements Runnable {
         Intent intent = new Intent(ACTION_TIME_TICK);
         intent.putExtra("time", time);
 
-        // Explicitly set the package name to ensure it delivers to your app's receivers
         intent.setPackage(context.getPackageName());
 
         context.sendBroadcast(intent);

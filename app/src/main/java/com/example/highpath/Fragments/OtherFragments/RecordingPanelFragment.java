@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -27,12 +28,10 @@ import java.util.Locale;
 public class RecordingPanelFragment extends Fragment {
 
     private Button btnStart, btnStop;
-    private TextView txtTimer;
-    private TextView txtDistance;
-    private TextView txtElevationGain;
-    private TextView txtPace;
+    private TextView txtTimer, txtDistance, txtElevationGain, txtPace;
     private String filePath, fileName;
 
+    // receiver for time + metrics + status
     private final BroadcastReceiver tRec = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -48,7 +47,6 @@ public class RecordingPanelFragment extends Fragment {
                 String pace = intent.getStringExtra("pace");
                 updateMetricsUI(totalKm, totalGain, pace);
             }
-            // Add status check here
             else if (RecordingService.ACTION_RECORDING_STATUS.equals(intent.getAction())) {
                 boolean isRecording = intent.getBooleanExtra("isRecording", false);
                 buttonState(isRecording);
@@ -64,9 +62,7 @@ public class RecordingPanelFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        view.setClickable(true);
-        view.setFocusable(true);
-
+        // connect ui
         btnStart = view.findViewById(R.id.btnStart);
         btnStop = view.findViewById(R.id.btnStop);
         txtTimer = view.findViewById(R.id.labelTime);
@@ -74,50 +70,71 @@ public class RecordingPanelFragment extends Fragment {
         txtElevationGain = view.findViewById(R.id.labelElevationGain);
         txtPace = view.findViewById(R.id.labelPace);
 
-        // SYNC ON STARTUP
+        // sync button state on load
         buttonState(RecordingService.isRecording);
 
-        btnStart.setOnClickListener(v -> {
-            filePath = StorageManager.getGpxPath(requireContext());
-            GpxFileName.generateAsync(requireContext(), generatedName -> {
-                fileName = generatedName;
-                disableStartButton();
-                enableStopButton();
-                RecordingService.start(requireContext(), filePath, fileName);
+        // start recording
+        btnStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Started")
-                        .setMessage("Recording path: " + fileName)
-                        .setPositiveButton("OK", null)
-                        .show();
-            });
+                filePath = StorageManager.getGpxPath(requireContext());
+
+                // generate file name async
+                GpxFileName.generateAsync(requireContext(), generatedName -> {
+                    fileName = generatedName;
+
+                    disableStartButton();
+                    enableStopButton();
+
+                    RecordingService.start(requireContext(), filePath, fileName);
+
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("Started")
+                            .setMessage("Recording path: " + fileName)
+                            .setPositiveButton("OK", null)
+                            .show();
+                });
+            }
         });
 
-        btnStop.setOnClickListener(v -> {
-            new AlertDialog.Builder(requireContext())
-                    .setTitle("Stop")
-                    .setMessage("Stop recording?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        disableStopButton();
-                        enableStartButton();
-                        RecordingService.stop(requireContext());
-                        txtTimer.setText("00:00:00");
-                        txtDistance.setText("0.00 km");
-                        txtElevationGain.setText("0 m");
-                        txtPace.setText("0:00 min/km");
-                    })
-                    .setNegativeButton("No", null)
-                    .show();
+        // stop recording
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Stop")
+                        .setMessage("Stop recording?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+
+                            disableStopButton();
+                            enableStartButton();
+
+                            RecordingService.stop(requireContext());
+
+                            // reset ui
+                            txtTimer.setText("00:00:00");
+                            txtDistance.setText("0.00 km");
+                            txtElevationGain.setText("0 m");
+                            txtPace.setText("0:00 min/km");
+
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+            }
         });
     }
 
     @Override
     public void onStart() {
         super.onStart();
+
+        // register receiver
         IntentFilter filter = new IntentFilter();
         filter.addAction(TimeRunnable.ACTION_TIME_TICK);
         filter.addAction(MetricsRunnable.ACTION_METRICS_UPDATE);
-        filter.addAction(RecordingService.ACTION_RECORDING_STATUS); // Register the action
+        filter.addAction(RecordingService.ACTION_RECORDING_STATUS);
 
         ContextCompat.registerReceiver(
                 requireContext(),
@@ -134,34 +151,35 @@ public class RecordingPanelFragment extends Fragment {
     }
 
     private void updateTimerUI(int totalSeconds) {
+        // format time
         int hours = totalSeconds / 3600;
         int minutes = (totalSeconds % 3600) / 60;
         int seconds = totalSeconds % 60;
-        String timeString = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
 
-        if (txtTimer != null) {
-            txtTimer.setText(timeString);
-        }
+        String timeString = String.format(Locale.getDefault(), "%02d:%02d:%02d",
+                hours, minutes, seconds);
+
+        if (txtTimer != null) txtTimer.setText(timeString);
     }
 
     private void updateMetricsUI(double distance, double elevation, String pace) {
-        if (txtDistance != null) {
+        if (txtDistance != null)
             txtDistance.setText(String.format(Locale.getDefault(), "%.2f km", distance));
-        }
-        if (txtElevationGain != null) {
+
+        if (txtElevationGain != null)
             txtElevationGain.setText(String.format(Locale.getDefault(), "%.0f m", elevation));
-        }
-        if (txtPace != null && pace != null) {
+
+        if (txtPace != null && pace != null)
             txtPace.setText(pace);
-        }
     }
 
+    // button helpers
     private void disableStartButton() { btnStart.setEnabled(false); btnStart.setAlpha(0.5f); }
     private void enableStartButton() { btnStart.setEnabled(true); btnStart.setAlpha(1.0f); }
     private void disableStopButton() { btnStop.setEnabled(false); btnStop.setAlpha(0.5f); }
     private void enableStopButton() { btnStop.setEnabled(true); btnStop.setAlpha(1.0f); }
 
-    private void buttonState (boolean isRecording) {
+    private void buttonState(boolean isRecording) {
         if (isRecording) {
             disableStartButton();
             enableStopButton();

@@ -41,10 +41,12 @@ public class SummaryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // get id
         if (getArguments() != null) {
             activityId = getArguments().getString("activityId");
         }
 
+        // connect ui
         nameView       = view.findViewById(R.id.activityNameSummary);
         distanceView   = view.findViewById(R.id.distanceSummary);
         elevationView  = view.findViewById(R.id.elevationSummary);
@@ -53,20 +55,27 @@ public class SummaryFragment extends Fragment {
         splitsList     = view.findViewById(R.id.splitsListViewSummary);
         trailMapImage  = view.findViewById(R.id.gpxTrailMap);
 
+        // load data
         loadActivityFromDb();
     }
 
+    // load activity + splits
     private void loadActivityFromDb() {
         new Thread(() -> {
+
             LocalDatabase db = LocalDatabase.getInstance(requireContext().getApplicationContext());
-            final ActivityEntity activity = db.activityDao().getActivityById(activityId);
-            final List<SplitEntity> splits = db.splitDao().getSplitsForActivity(activityId);
+
+            // fetch data
+            ActivityEntity activity = db.activityDao().getActivityById(activityId);
+            List<SplitEntity> splits = db.splitDao().getSplitsForActivity(activityId);
 
             if (getActivity() == null || !isAdded()) return;
 
+            // update ui
             requireActivity().runOnUiThread(() -> {
                 if (!isAdded()) return;
 
+                // fill activity info
                 if (activity != null) {
                     nameView.setText(activity.getActivityName());
                     distanceView.setText(formatDistance(activity.getDistance()));
@@ -74,11 +83,13 @@ public class SummaryFragment extends Fragment {
                     movingTimeView.setText(formatDuration(activity.getMovingTime()));
                     actualTimeView.setText(formatDuration(activity.getActualTime()));
 
-                    // Load trail map image if available
+                    // load trail map image
                     if (trailMapImage != null) {
                         byte[] imageBytes = activity.getTrailMapImage();
+
                         if (imageBytes != null && imageBytes.length > 0) {
                             Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+
                             if (bitmap != null) {
                                 trailMapImage.setImageBitmap(bitmap);
                                 trailMapImage.setVisibility(View.VISIBLE);
@@ -91,6 +102,7 @@ public class SummaryFragment extends Fragment {
                     }
                 }
 
+                // fill splits list
                 if (splits != null && !splits.isEmpty()) {
                     SplitsAdapter adapter = new SplitsAdapter(requireContext(), splits);
                     splitsList.setAdapter(adapter);
@@ -100,26 +112,33 @@ public class SummaryFragment extends Fragment {
         }).start();
     }
 
+    // expand listview to fit all items
     private void setListViewHeightBasedOnItems(ListView listView) {
         ListAdapter adapter = listView.getAdapter();
         if (adapter == null) return;
 
         int totalHeight = 0;
+
+        // measure each row
         for (int i = 0; i < adapter.getCount(); i++) {
             View item = adapter.getView(i, null, listView);
+
             item.measure(
                     View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.AT_MOST),
                     View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
             );
+
             totalHeight += item.getMeasuredHeight();
         }
 
+        // apply height
         ViewGroup.LayoutParams params = listView.getLayoutParams();
         params.height = totalHeight + (listView.getDividerHeight() * (adapter.getCount() - 1));
         listView.setLayoutParams(params);
         listView.requestLayout();
     }
 
+    // format helpers
     private String formatDistance(double distanceKm) {
         return String.format(Locale.UK, "%.2f km", distanceKm);
     }

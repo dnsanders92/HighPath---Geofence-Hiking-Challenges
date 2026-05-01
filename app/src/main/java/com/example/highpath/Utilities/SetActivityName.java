@@ -6,13 +6,6 @@ public class SetActivityName {
 
     public static String summitName = null;
 
-    public void checkSummit(String name) {
-
-        if (summitName != null) {
-
-        }
-    }
-
     public String getActivityName() {
 
         if (summitName != null) {

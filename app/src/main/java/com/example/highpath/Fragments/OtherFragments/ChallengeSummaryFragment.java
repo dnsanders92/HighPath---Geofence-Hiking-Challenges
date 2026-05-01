@@ -45,6 +45,7 @@ public class ChallengeSummaryFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_challenge_summary, container, false);
 
+        // connect ui
         challengeImage       = view.findViewById(R.id.challengeImage);
         challengeName        = view.findViewById(R.id.challengeName);
         challengeDescription = view.findViewById(R.id.challengeDescription);
@@ -64,10 +65,9 @@ public class ChallengeSummaryFragment extends Fragment {
 
             if (challenge != null) {
 
-                // Load items from challenge_items table
+                // Load items from challenge_items
                 List<ChallengeItemEntity> items = db.challengeItemDao().getItemsForChallenge(challengeId);
 
-                // For each item that has a summit_id, load the SummitsEntity
                 List<SummitsEntity> summits = new ArrayList<>();
                 for (ChallengeItemEntity item : items) {
                     if (item.getSummitId() != null) {
@@ -80,7 +80,7 @@ public class ChallengeSummaryFragment extends Fragment {
                     }
                 }
 
-                // Calculate progress from challenge_items directly
+                // Calculate progress from challenge_items
                 int total = items.size();
                 int completed = db.challengeItemDao().getCompletedCountForChallenge(challengeId);
                 int percent = (total > 0) ? (int) ((completed / (float) total) * 100) : 0;

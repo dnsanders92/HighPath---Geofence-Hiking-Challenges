@@ -26,7 +26,7 @@ public class UploadGpx {
             return;
         }
 
-        // Get the filename (e.g., "morning_hike.gpx")
+        // get the filename (e.g., "morning_hike.gpx")
         String fileName = file.getName();
 
         // Construct the path: bucket/userId/folder/filename
@@ -35,7 +35,6 @@ public class UploadGpx {
 
         OkHttpClient client = new OkHttpClient();
 
-        // GPX files are XML-based
         RequestBody requestBody = RequestBody.create(file, MediaType.parse("application/gpx+xml"));
 
         Request request = new Request.Builder()
@@ -44,7 +43,6 @@ public class UploadGpx {
                 .addHeader("apikey", apiKey)
                 .addHeader("Authorization", "Bearer " + apiKey)
                 .addHeader("Content-Type", "application/gpx+xml")
-                // Upsert: true allows you to overwrite the file if it exists
                 .addHeader("x-upsert", "true")
                 .build();
 

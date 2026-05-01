@@ -42,24 +42,37 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // connect ui
         loginEmail = view.findViewById(R.id.loginEmail);
         loginPassword = view.findViewById(R.id.loginPassword);
         loginButton = view.findViewById(R.id.loginButton);
         registerButton = view.findViewById(R.id.registerButton);
 
-        loginButton.setOnClickListener(v -> performLogin());
+        // login click
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                performLogin();
+            }
+        });
 
-        registerButton.setOnClickListener(v -> {
-            requireActivity()
-                    .getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.login_container, new RegisterFragment())
-                    .addToBackStack(null)
-                    .commit();
+        // go to register
+        registerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requireActivity()
+                        .getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.login_container, new RegisterFragment())
+                        .addToBackStack(null)
+                        .commit();
+            }
         });
     }
 
     private void performLogin() {
+
+        // get input
         String email = loginEmail.getText().toString().trim();
         String password = loginPassword.getText().toString().trim();
 
@@ -68,47 +81,53 @@ public class LoginFragment extends Fragment {
             return;
         }
 
+        // disable button
         loginButton.setEnabled(false);
         loginButton.setText("Signing In...");
 
         final Context appContext = requireContext().getApplicationContext();
 
+        // login request
         LoginUser.login(appContext, email, password, new LoginUser.LoginCallback() {
+
             @Override
             public void onSuccess(JSONObject userData) {
 
-                // 1. Sync user profile to local Room DB
+                // save user locally
                 CreateLocalUser.syncCloudToLocal(appContext, userData);
 
                 try {
                     int userId = userData.getInt("user_id");
 
-                    // 2. Sync activities with callback
+                    // fetch activities
                     SyncActivities.fetchUserActivities(appContext, userId,
                             new SyncActivities.ActivitySyncCallback() {
+
                                 @Override
                                 public void onSuccess(JSONArray activities) {
-                                    Log.d(TAG, "Activities fetched: " + activities.length());
+                                    Log.d(TAG, "activities fetched: " + activities.length());
 
-                                    // Wait for all activities to be written before syncing images and splits
+                                    // write activities then sync images + splits
                                     CreateLocalUser.syncActivitiesToLocal(appContext, activities, () -> {
-                                        Log.d(TAG, "Activities written — starting image and splits sync");
 
-                                        // 3. Sync trail map images after all activities confirmed written
+                                        Log.d(TAG, "activities written — syncing images + splits");
+
+                                        // sync trail map images
                                         SyncTrailMapImages.sync(appContext, userId);
 
-                                        // 4. Sync splits after activities written
+                                        // sync splits
                                         SyncActivities.fetchUserSplits(appContext, userId,
                                                 new SyncActivities.SplitSyncCallback() {
+
                                                     @Override
                                                     public void onSuccess(JSONArray splits) {
                                                         CreateLocalUser.syncSplitsToLocal(appContext, splits);
-                                                        Log.d(TAG, "Splits synced on login: " + splits.length());
+                                                        Log.d(TAG, "splits synced: " + splits.length());
                                                     }
 
                                                     @Override
                                                     public void onFailure(String error) {
-                                                        Log.e(TAG, "Splits sync failed: " + error);
+                                                        Log.e(TAG, "splits sync failed: " + error);
                                                     }
                                                 });
                                     });
@@ -116,30 +135,31 @@ public class LoginFragment extends Fragment {
 
                                 @Override
                                 public void onFailure(String error) {
-                                    Log.e(TAG, "Activity sync failed: " + error);
+                                    Log.e(TAG, "activity sync failed: " + error);
                                 }
                             });
 
-                    // 5. Sync completed challenge items
+                    // sync completed challenge items
                     SyncActivities.fetchCompletedChallengeItems(appContext, userId,
                             new SyncActivities.ChallengeItemSyncCallback() {
+
                                 @Override
                                 public void onSuccess(JSONArray items) {
                                     CreateLocalUser.syncChallengeItemsToLocal(appContext, items);
-                                    Log.d(TAG, "Challenge items synced on login: " + items.length());
+                                    Log.d(TAG, "challenge items synced: " + items.length());
                                 }
 
                                 @Override
                                 public void onFailure(String error) {
-                                    Log.e(TAG, "Challenge items sync failed: " + error);
+                                    Log.e(TAG, "challenge items sync failed: " + error);
                                 }
                             });
 
                 } catch (Exception e) {
-                    Log.e(TAG, "Could not get userId for sync: " + e.getMessage());
+                    Log.e(TAG, "could not get userId: " + e.getMessage());
                 }
 
-                // 6. Navigate to MainActivity
+                // go to main activity
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
                         Intent intent = new Intent(appContext, MainActivity.class);
@@ -151,6 +171,7 @@ public class LoginFragment extends Fragment {
 
             @Override
             public void onFailure(String error) {
+
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
                         loginButton.setEnabled(true);

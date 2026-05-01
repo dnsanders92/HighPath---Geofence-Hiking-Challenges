@@ -43,6 +43,7 @@ public class TrailSummaryFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_trail_summary, container, false);
 
+        // connect ui
         trailMap       = view.findViewById(R.id.trailMapImage);
         txtName        = view.findViewById(R.id.trailName);
         txtRegion      = view.findViewById(R.id.trailRegion);
@@ -66,6 +67,7 @@ public class TrailSummaryFragment extends Fragment {
         loadTrailData();
     }
 
+    // open trail map
     private void navigateToMap(String id) {
         TrailMapFragment mapFragment = new TrailMapFragment();
         Bundle bundle = new Bundle();
@@ -77,6 +79,7 @@ public class TrailSummaryFragment extends Fragment {
                 .commit();
     }
 
+    // load trail data
     private void loadTrailData() {
         if (trailId == null) return;
 
@@ -115,6 +118,7 @@ public class TrailSummaryFragment extends Fragment {
         });
     }
 
+    // set difficulty colour on ui
     private void setDifficultyChip(String difficulty) {
         if (difficulty == null) return;
 

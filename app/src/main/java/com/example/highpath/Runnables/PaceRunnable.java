@@ -23,18 +23,15 @@ public class PaceRunnable implements Runnable {
 
     @Override
     public void run() {
-        // 1. Get raw values from other Runnables
-        // Using 'long' for time to match our CalculatePace signature
+
         long currentSeconds = (long) timeRunnable.time;
         double currentDistanceKm = metricsRunnable.totalDistance;
 
-        // 2. Calculate the raw pace (double)
         double rawPace = CalculatePace.pace(currentSeconds, currentDistanceKm);
 
-        // 3. Convert that double into a formatted String (e.g., "05:30")
         String paceString = CalculatePace.formatPaceToString(rawPace);
 
-        // 4. Broadcast the update
+        // broadcast the update
         Intent intent = new Intent(ACTION_PACE_UPDATE);
         intent.putExtra("distance", metricsRunnable.totalDistance);
         intent.putExtra("elevation", metricsRunnable.totalElevationGain);
@@ -42,7 +39,7 @@ public class PaceRunnable implements Runnable {
         intent.setPackage(context.getPackageName());
         context.sendBroadcast(intent);
 
-        // Run again in 10 seconds
+        // run again in 10 seconds
         handler.postDelayed(this, 10000);
     }
 }

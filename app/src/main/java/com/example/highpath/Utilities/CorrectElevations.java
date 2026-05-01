@@ -16,7 +16,7 @@ public class CorrectElevations {
     public void updateGPXElevations(GPXData gpxData) {
         if (gpxData == null) return;
 
-        // Log the raw elevations before correction
+        // raw elevations before correction
         if (gpxData.elevations != null && gpxData.elevations.size() > 0) {
             Log.d("CorrectElevations", "RAW elevations - First: " + gpxData.elevations.get(0)
                     + " | Last: " + gpxData.elevations.get(gpxData.elevations.size() - 1)
@@ -55,7 +55,6 @@ public class CorrectElevations {
             }
         }
 
-        // Size validation before assigning
         if (correctedList.size() != gpxData.latitudes.size()) {
             Log.e("CorrectElevations", "Size mismatch! Expected: " + gpxData.latitudes.size()
                     + " | Got: " + correctedList.size() + " — discarding corrected data");
@@ -64,7 +63,7 @@ public class CorrectElevations {
 
         gpxData.correctedElevations = correctedList;
 
-        // Log corrected elevations after
+        // log corrected elevations
         Log.d("CorrectElevations", "CORRECTED elevations - First: " + correctedList.get(0)
                 + " | Last: " + correctedList.get(correctedList.size() - 1)
                 + " | Count: " + correctedList.size());

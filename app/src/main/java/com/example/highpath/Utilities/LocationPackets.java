@@ -6,7 +6,7 @@ import java.util.List;
 
 public class LocationPackets {
 
-    private GPXData gpxData;   // not initialized yet
+    private GPXData gpxData;
     private final int packetSize = 100;
 
     public void setGPXData(GPXData gpxData) {

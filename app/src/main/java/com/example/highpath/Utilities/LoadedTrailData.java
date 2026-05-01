@@ -13,13 +13,12 @@ public class LoadedTrailData {
     public List<Double> longitudes = new ArrayList<>();
     public List<Double> elevations = new ArrayList<>();
 
-    // Constructor to receive context for the Database instance
     public LoadedTrailData(Context context) {
         this.context = context.getApplicationContext();
     }
 
     public void getTrailData(String trailId) {
-        // Clear lists before starting a new load
+        // clear lists before starting a new load
         latitudes.clear();
         longitudes.clear();
         elevations.clear();
@@ -52,10 +51,6 @@ public class LoadedTrailData {
                         }
                     }
                 }
-
-                // DATA IS READY HERE
-                // If you need to update the UI (e.g., show a polyline on a map),
-                // you must use a Handler or runOnUiThread() here.
             }
         }).start();
     }

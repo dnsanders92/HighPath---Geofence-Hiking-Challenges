@@ -45,6 +45,8 @@ public class ActivitiesFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_activities, container, false);
+
+        // connect ui
         activitiesList = view.findViewById(R.id.activities_list);
         searchBox = view.findViewById(R.id.searchActivities);
         sortSpinner = view.findViewById(R.id.sortSpinner);
@@ -56,38 +58,43 @@ public class ActivitiesFragment extends Fragment {
     }
 
     private void setupSearch() {
+        // search listener
         searchBox.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // filter list
                 currentFilteredList = searchHelper.filter(allActivities, s.toString(), ActivityEntity::getActivityName);
                 applySortAndRefresh();
             }
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
     }
 
     private void setupSortSpinner() {
+        // sort options
         String[] options = {"Newest First", "Oldest First", "Longest Distance", "Highest Elevation"};
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item, options) {
-            @NonNull
-            @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                return new View(getContext()); // Keeps UI clean for custom sort icon background
-            }
-        };
+
+        ArrayAdapter<String> spinnerAdapter =
+                new ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item, options) {
+                    @NonNull
+                    @Override
+                    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                        // hide default text (custom icon used)
+                        return new View(getContext());
+                    }
+                };
+
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sortSpinner.setAdapter(spinnerAdapter);
 
+        // sort listener
         sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 applySortAndRefresh();
             }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
     }
 
@@ -95,21 +102,31 @@ public class ActivitiesFragment extends Fragment {
         if (currentFilteredList == null || currentFilteredList.isEmpty()) return;
 
         int position = sortSpinner.getSelectedItemPosition();
+
+        // sort logic
         switch (position) {
-            case 0: // Newest
-                Collections.sort(currentFilteredList, (a1, a2) -> Long.compare(a2.getTimestamp(), a1.getTimestamp()));
+            case 0: // newest
+                Collections.sort(currentFilteredList,
+                        (a1, a2) -> Long.compare(a2.getTimestamp(), a1.getTimestamp()));
                 break;
-            case 1: // Oldest
-                Collections.sort(currentFilteredList, Comparator.comparingLong(ActivityEntity::getTimestamp));
+
+            case 1: // oldest
+                Collections.sort(currentFilteredList,
+                        Comparator.comparingLong(ActivityEntity::getTimestamp));
                 break;
-            case 2: // Distance
-                Collections.sort(currentFilteredList, (a1, a2) -> Double.compare(a2.getDistance(), a1.getDistance()));
+
+            case 2: // distance
+                Collections.sort(currentFilteredList,
+                        (a1, a2) -> Double.compare(a2.getDistance(), a1.getDistance()));
                 break;
-            case 3: // Elevation
-                Collections.sort(currentFilteredList, (a1, a2) -> Double.compare(a2.getElevationGain(), a1.getElevationGain()));
+
+            case 3: // elevation
+                Collections.sort(currentFilteredList,
+                        (a1, a2) -> Double.compare(a2.getElevationGain(), a1.getElevationGain()));
                 break;
         }
 
+        // update adapter
         if (adapter != null) {
             adapter.updateList(new ArrayList<>(currentFilteredList));
         }
@@ -122,6 +139,7 @@ public class ActivitiesFragment extends Fragment {
     }
 
     public void loadActivities() {
+        // load from db
         new Thread(() -> {
             Context context = getContext();
             if (context == null) return;
@@ -130,19 +148,26 @@ public class ActivitiesFragment extends Fragment {
             allActivities = db.activityDao().getAllActivities();
             currentFilteredList = new ArrayList<>(allActivities);
 
+            // update ui
             if (getActivity() != null && isAdded()) {
                 getActivity().runOnUiThread(() -> {
                     if (getContext() != null && isAdded()) {
+
+                        // set adapter
                         adapter = new ActivityAdapter(getContext(), currentFilteredList);
                         activitiesList.setAdapter(adapter);
 
-                        // Apply initial sort (Newest)
+                        // initial sort
                         applySortAndRefresh();
 
-                        activitiesList.setOnItemClickListener((parent, view1, position, id) -> {
-                            ActivityEntity clickedActivity = (ActivityEntity) adapter.getItem(position);
-                            if (clickedActivity != null) {
-                                openSummary(clickedActivity.getActivityId());
+                        // item click
+                        activitiesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view1, int position, long id) {
+                                ActivityEntity clicked = (ActivityEntity) adapter.getItem(position);
+                                if (clicked != null) {
+                                    openSummary(clicked.getActivityId());
+                                }
                             }
                         });
                     }
@@ -152,6 +177,7 @@ public class ActivitiesFragment extends Fragment {
     }
 
     private void openSummary(String activityId) {
+        // open summary fragment
         SummaryFragment summaryFragment = new SummaryFragment();
         Bundle args = new Bundle();
         args.putString("activityId", activityId);

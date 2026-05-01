@@ -21,11 +21,11 @@ public class UpdateProfile {
             UserEntity user = userDao.getSingleUser();
 
             if (user != null) {
-                // IMPORTANT: Preserve the existing ID so Room overwrites the same row
+                // get id so room overwrites the same row
                 int existingId = user.getUserId();
-                Log.d("UpdateProfile", "Updating User ID: " + existingId);
+                Log.d("UpdateProfile", "updating user id: " + existingId);
 
-                // Increment values
+                // increment stats
                 user.setTotalDistanceKm(user.getTotalDistanceKm() + (int) distanceKM);
                 user.setTotalElevationM(user.getTotalElevationM() + (int) elevationM);
                 user.setCompletedActivities(user.getCompletedActivities() + activitiesIncrement);
@@ -33,15 +33,15 @@ public class UpdateProfile {
                 user.setTotalTimeOutsideSeconds(user.getTotalTimeOutsideSeconds() + timeOutsideSeconds);
                 user.setTotalMovingTimeSeconds(user.getTotalMovingTimeSeconds() + timeMovingSeconds);
 
-                // Save back to DB
+                // save
                 userDao.insert(user);
 
-                Log.d("UpdateProfile", "Stats updated. New Distance: " + user.getTotalDistanceKm());
+                Log.d("UpdateProfile", "stats updated. new distance: " + user.getTotalDistanceKm());
             } else {
-                Log.e("UpdateProfile", "User entity was null. Profile not updated.");
+                Log.e("UpdateProfile", "user was null. profile not updated.");
             }
         } catch (Exception e) {
-            Log.e("UpdateProfile", "Error updating profile", e);
+            Log.e("UpdateProfile", "error updating profile", e);
         }
     }
 }

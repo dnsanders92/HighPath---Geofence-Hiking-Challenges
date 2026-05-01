@@ -18,39 +18,39 @@ import com.example.highpath.Database.Supabase.UploadTrailMap;
 import com.example.highpath.MapBox.GenerateTrailMap;
 import com.example.highpath.Utilities.SetActivityName;
 
-import java.util.concurrent.CountDownLatch;
-
 public class ActivityBuilder {
 
     private static final String TAG = "ActivityBuilder";
 
     public void insertActivity(Context context, String fullPath) {
+
         new Thread(() -> {
 
+            // calculate metrics
             CalculateFinalMetrics metrics = new CalculateFinalMetrics();
             metrics.calculateMetrics(context, fullPath);
+
             SetActivityName setActivityName = new SetActivityName();
 
-            // Generate trail map and store bytes in gpxData.trailMapImage
+            // generate trail map
             if (metrics.gpx != null) {
-                CountDownLatch latch = new CountDownLatch(1);
                 GenerateTrailMap.generateMap(context, metrics.gpx, new GenerateTrailMap.TrailMapCallback() {
                     @Override
                     public void onSuccess(android.graphics.Bitmap bitmap) {
-                        Log.d(TAG, "Trail map generated, image stored in GPXData");
-                        latch.countDown();
+                        Log.d(TAG, "trail map generated");
                     }
 
                     @Override
                     public void onFailure(String error) {
-                        Log.e(TAG, "Trail map generation failed: " + error);
-                        latch.countDown();
+                        Log.e(TAG, "trail map failed: " + error);
                     }
                 });
 
-                try { latch.await(); } catch (InterruptedException ignored) {}
+                // short delay to allow async map write
+                try { Thread.sleep(1500); } catch (InterruptedException ignored) {}
             }
 
+            // database access
             LocalDatabase db = LocalDatabase.getInstance(context);
             UserDao userDao = db.userDao();
             ActivityDao activityDao = db.activityDao();
@@ -58,7 +58,8 @@ public class ActivityBuilder {
             UserEntity user = userDao.getSingleUser();
 
             if (user != null) {
-                // 1. Create and Save Activity Locally
+
+                // create activity
                 ActivityEntity activity = new ActivityEntity();
                 activity.setActivityId(user.getUserId() + "_" + System.currentTimeMillis());
                 activity.setUserId(user.getUserId());
@@ -74,15 +75,15 @@ public class ActivityBuilder {
                 activity.setCalories(metrics.calories);
                 activity.setIsChallenge(false);
 
-                // Set trail map image from GPXData if available
+                // attach trail map image
                 if (metrics.gpx != null && metrics.gpx.trailMapImage != null) {
                     activity.setTrailMapImage(metrics.gpx.trailMapImage);
-                    Log.d(TAG, "Trail map image set on activity: " + metrics.gpx.trailMapImage.length + " bytes");
                 }
 
+                // save activity locally
                 activityDao.insert(activity);
 
-                // Save splits
+                // save splits
                 if (!metrics.splits.isEmpty()) {
                     for (SplitEntity split : metrics.splits) {
                         split.setActivityId(activity.getActivityId());
@@ -90,7 +91,7 @@ public class ActivityBuilder {
                     db.splitDao().insertSplits(metrics.splits);
                 }
 
-                // 2. Update User Stats Locally
+                // update user stats
                 user.setTotalDistanceKm(user.getTotalDistanceKm() + (int) Math.round(metrics.totalDistanceKM));
                 user.setTotalElevationM(user.getTotalElevationM() + (int) Math.round(metrics.totalElevationGainM));
                 user.setTotalTimeOutsideSeconds(user.getTotalTimeOutsideSeconds() + (int) metrics.totalTimeOutside);
@@ -98,9 +99,8 @@ public class ActivityBuilder {
                 user.setCompletedActivities(user.getCompletedActivities() + 1);
 
                 userDao.update(user);
-                Log.d(TAG, "Activity and user stats saved locally.");
 
-                // 3. Sync Activity to Supabase
+                // sync activity to supabase
                 InsertActivity.insert(
                         context,
                         activity.getActivityId(),
@@ -115,28 +115,29 @@ public class ActivityBuilder {
                         activity.getCalories(),
                         activity.getGpxFilePath(),
                         activity.getTimestamp(),
-                        activity.getIsChallenge() != null && activity.getIsChallenge(),
+                        activity.getIsChallenge(),
                         new InsertActivity.ActivityCallback() {
                             @Override
-                            public void onSuccess() { Log.d(TAG, "Supabase activity synced."); }
+                            public void onSuccess() { Log.d(TAG, "supabase activity synced"); }
                             @Override
-                            public void onFailure(String error) { Log.e(TAG, "Supabase activity sync failed: " + error); }
+                            public void onFailure(String error) { Log.e(TAG, "supabase activity sync failed: " + error); }
                         }
                 );
 
+                // sync splits
                 InsertSplits.insert(
                         context,
                         (int) user.getUserId(),
                         metrics.splits,
                         new InsertSplits.InsertCallback() {
                             @Override
-                            public void onSuccess() { Log.d(TAG, "Splits synced to Supabase."); }
+                            public void onSuccess() { Log.d(TAG, "splits synced"); }
                             @Override
-                            public void onFailure(String error) { Log.e(TAG, "Splits sync failed: " + error); }
+                            public void onFailure(String error) { Log.e(TAG, "splits sync failed: " + error); }
                         }
                 );
 
-                // 4. Update User Stats on Supabase
+                // sync user stats
                 UpdateUser.updateStatistics(
                         context,
                         user.getUserId(),
@@ -148,27 +149,22 @@ public class ActivityBuilder {
                         user.getTotalTimeOutsideSeconds(),
                         new UpdateUser.UpdateCallback() {
                             @Override
-                            public void onSuccess() { Log.d(TAG, "Supabase user stats updated."); }
+                            public void onSuccess() { Log.d(TAG, "supabase user stats updated"); }
                             @Override
-                            public void onFailure(String error) { Log.e(TAG, "Supabase user update failed: " + error); }
+                            public void onFailure(String error) { Log.e(TAG, "supabase user update failed: " + error); }
                         }
                 );
 
-                // 5. Upload GPX File to Supabase Storage
+                // upload gpx file
                 UploadGpx gpxUploader = new UploadGpx();
                 gpxUploader.upload(context, (int) user.getUserId(), fullPath, new UploadGpx.UploadCallback() {
                     @Override
-                    public void onSuccess(String fileUrl) {
-                        Log.d(TAG, "GPX file successfully uploaded to storage: " + fileUrl);
-                    }
-
+                    public void onSuccess(String fileUrl) { Log.d(TAG, "gpx uploaded: " + fileUrl); }
                     @Override
-                    public void onFailure(String error) {
-                        Log.e(TAG, "GPX storage upload failed: " + error);
-                    }
+                    public void onFailure(String error) { Log.e(TAG, "gpx upload failed: " + error); }
                 });
 
-                // 6. Upload Trail Map Image to Supabase Storage
+                // upload trail map
                 if (metrics.gpx != null && metrics.gpx.trailMapImage != null) {
                     UploadTrailMap.upload(
                             context,
@@ -177,21 +173,17 @@ public class ActivityBuilder {
                             metrics.gpx.trailMapImage,
                             new UploadTrailMap.UploadCallback() {
                                 @Override
-                                public void onSuccess(String fileUrl) {
-                                    Log.d(TAG, "Trail map uploaded to storage: " + fileUrl);
-                                }
-
+                                public void onSuccess(String fileUrl) { Log.d(TAG, "trail map uploaded: " + fileUrl); }
                                 @Override
-                                public void onFailure(String error) {
-                                    Log.e(TAG, "Trail map upload failed: " + error);
-                                }
+                                public void onFailure(String error) { Log.e(TAG, "trail map upload failed: " + error); }
                             }
                     );
                 }
 
             } else {
-                Log.w(TAG, "No user found.");
+                Log.w(TAG, "no user found");
             }
+
         }).start();
     }
 }

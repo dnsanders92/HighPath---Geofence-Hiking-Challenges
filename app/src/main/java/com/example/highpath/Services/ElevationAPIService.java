@@ -21,7 +21,7 @@ public class ElevationAPIService {
         List<Double> elevations = new ArrayList<>();
 
         try {
-            // Build pipe-separated locations string: "lat,lng|lat,lng|..."
+
             StringBuilder locBuilder = new StringBuilder();
             for (int i = 0; i < coordinates.length; i++) {
                 locBuilder.append(coordinates[i][0])
@@ -46,7 +46,6 @@ public class ElevationAPIService {
                 String line;
                 while ((line = br.readLine()) != null) sb.append(line);
 
-                // Response: {"results": [{"elevation": 120.5, "location": {...}}, ...], "status": "OK"}
                 JSONObject json = new JSONObject(sb.toString());
                 String status = json.getString("status");
                 Log.d("ElevationAPI", "API status: " + status);
@@ -55,7 +54,7 @@ public class ElevationAPIService {
                     JSONArray results = json.getJSONArray("results");
                     for (int i = 0; i < results.length(); i++) {
                         JSONObject result = results.getJSONObject(i);
-                        // elevation can be null if point is outside dataset bounds
+
                         if (result.isNull("elevation")) {
                             Log.w("ElevationAPI", "Null elevation at index " + i);
                             elevations.add(0.0);

@@ -44,6 +44,7 @@ public class SummitDataFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_summit_data, container, false);
 
+        // connect ui
         summitImage = view.findViewById(R.id.summitImage);
         summitName = view.findViewById(R.id.summitName);
         elevation = view.findViewById(R.id.summitHeight);
@@ -57,6 +58,7 @@ public class SummitDataFragment extends Fragment {
         return view;
     }
 
+    // load summit details from db.
     private void loadSummitDetails() {
         new Thread(() -> {
             LocalDatabase db = LocalDatabase.getInstance(requireContext());

@@ -28,17 +28,14 @@ public class UpdateUser {
             long totalTimeOutside,
             UpdateCallback callback
     ) {
+        // supabase connection
         String projectId = context.getString(R.string.supabase_project_id);
         String apiKey = context.getString(R.string.supabase_api_key);
 
-        // --- HARDCODED TEST ---
-        // Using 11 as requested.
-        // I am using 'user_id' here. If this fails, check your Supabase Table Editor
-        // for the EXACT name of your primary key column.
         String url = "https://" + projectId + ".supabase.co/rest/v1/users?user_id=eq." + userId;
+        Log.d(TAG, "targeting url: " + url);
 
-        Log.d(TAG, "Targeting URL: " + url);
-
+        // build json
         JSONObject json = new JSONObject();
         try {
             json.put("total_distance_km", totalDistance);
@@ -48,16 +45,19 @@ public class UpdateUser {
             json.put("total_moving_time_seconds", totalMovingTime);
             json.put("total_time_outside_seconds", totalTimeOutside);
         } catch (JSONException e) {
-            callback.onFailure("JSON Construction Error: " + e.getMessage());
+            callback.onFailure("json error: " + e.getMessage());
             return;
         }
 
         OkHttpClient client = new OkHttpClient();
+
+        // request
         RequestBody body = RequestBody.create(
                 json.toString(),
                 MediaType.parse("application/json; charset=utf-8")
         );
 
+        // patch request
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("apikey", apiKey)
@@ -67,23 +67,28 @@ public class UpdateUser {
                 .patch(body)
                 .build();
 
+        // send request
         client.newCall(request).enqueue(new Callback() {
+
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.e(TAG, "Network failure: " + e.getMessage());
-                callback.onFailure("Network failure: " + e.getMessage());
+                Log.e(TAG, "network failure: " + e.getMessage());
+                callback.onFailure("network failure: " + e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
+
                 if (response.isSuccessful()) {
-                    Log.d(TAG, "Success! Response code: " + response.code());
+                    Log.d(TAG, "success, code: " + response.code());
                     callback.onSuccess();
                 } else {
-                    String errorBody = response.body() != null ? response.body().string() : "No error body";
-                    Log.e(TAG, "Failed! Code: " + response.code() + " Response: " + errorBody);
-                    callback.onFailure("Code: " + response.code() + " Message: " + errorBody);
+                    // supabase returned error
+                    String errorBody = response.body() != null ? response.body().string() : "no error body";
+                    Log.e(TAG, "failed, code: " + response.code() + " response: " + errorBody);
+                    callback.onFailure("code: " + response.code() + " message: " + errorBody);
                 }
+
                 response.close();
             }
         });

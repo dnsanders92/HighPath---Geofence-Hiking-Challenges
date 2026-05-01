@@ -25,6 +25,8 @@ public class SplitsAdapter extends ArrayAdapter<SplitEntity> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+
+        // connect views
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext())
                     .inflate(R.layout.splits_list_item, parent, false);
@@ -36,6 +38,7 @@ public class SplitsAdapter extends ArrayAdapter<SplitEntity> {
         TextView splitPace   = convertView.findViewById(R.id.splitPace);
         TextView splitDist   = convertView.findViewById(R.id.splitDistance);
 
+        // set text fields
         if (split != null) {
             splitNumber.setText(String.format(Locale.UK, "KM %d", split.getSplitIndex() + 1));
             splitPace.setText(formatPace(split.getPace()));
@@ -45,6 +48,7 @@ public class SplitsAdapter extends ArrayAdapter<SplitEntity> {
         return convertView;
     }
 
+    // format pace
     private String formatPace(Double pace) {
         if (pace == null || pace <= 0) return "0:00 /km";
         int minutes = (int) (pace / 60);

@@ -57,10 +57,10 @@ public class CheckGeofence {
     private void updateDatabase(Context context, SummitsEntity s, int userId) {
         LocalDatabase db = LocalDatabase.getInstance(context);
 
-        // 1. Mark summit completed
+        // mark summit completed
         db.summitsDao().updateSummit(s);
 
-        // 2. Find all challenge_items that reference this summit and mark them completed
+        // find all challenge_items that reference this summit and mark completed
         List<ChallengeItemEntity> items = db.challengeItemDao().getItemsBySummitId(s.getSummitId());
 
         if (items == null || items.isEmpty()) return;
@@ -69,7 +69,7 @@ public class CheckGeofence {
             item.setCompleted(true);
             db.challengeItemDao().updateItem(item);
 
-            // 3. Sync completed item to Supabase
+            // sync completed item to Supabase
             if (userId != -1) {
                 InsertChallengeItem.insert(context, userId, item, new InsertChallengeItem.InsertCallback() {
                     @Override
@@ -84,7 +84,7 @@ public class CheckGeofence {
                 });
             }
 
-            // 4. Increment challenge progress by 1
+            // increment challenge progress by 1
             ChallengesEntity challenge = db.challengesDao().getChallengeById(item.getChallengeId());
             if (challenge != null) {
                 challenge.setCompletedSummits(challenge.getCompletedSummits() + 1);

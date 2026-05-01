@@ -16,54 +16,75 @@ public class LoginUser {
     }
 
     public static void login(Context context, String email, String password, LoginCallback callback) {
+
+        // supabase connections
         String projectId = context.getString(R.string.supabase_project_id);
         String apiKey = context.getString(R.string.supabase_api_key);
 
-        // 1. Authenticate via Supabase Auth
+        // auth endpoint
         String authUrl = "https://" + projectId + ".supabase.co/auth/v1/token?grant_type=password";
 
+        // build login json
         JSONObject loginJson = new JSONObject();
         try {
             loginJson.put("email", email);
             loginJson.put("password", password);
-        } catch (JSONException e) { return; }
+        } catch (JSONException e) {
+            return;
+        }
 
         OkHttpClient client = new OkHttpClient();
-        RequestBody body = RequestBody.create(loginJson.toString(), MediaType.parse("application/json"));
 
+        // request body
+        RequestBody body = RequestBody.create(
+                loginJson.toString(),
+                MediaType.parse("application/json")
+        );
+
+        // auth request
         Request authRequest = new Request.Builder()
                 .url(authUrl)
                 .addHeader("apikey", apiKey)
                 .post(body)
                 .build();
 
+        // send auth request
         client.newCall(authRequest).enqueue(new Callback() {
+
             @Override
-            public void onFailure(Call call, IOException e) { callback.onFailure(e.getMessage()); }
+            public void onFailure(Call call, IOException e) {
+                // network error
+                callback.onFailure(e.getMessage());
+            }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
+
                 if (response.isSuccessful()) {
-                    // 2. Success! Auth verified. Now fetch the profile data.
-                    // In this simple setup, we query by email or first/last name
-                    // Ideally, you'd query by the UUID returned in this response.
+                    // auth ok → fetch profile
                     fetchUserProfile(context, email, callback);
                 } else {
-                    callback.onFailure("Invalid email or password");
+                    // invalid login
+                    callback.onFailure("invalid email or password");
                 }
+
                 response.close();
             }
         });
     }
 
     private static void fetchUserProfile(Context context, String email, LoginCallback callback) {
+
+        // supabase connection
         String projectId = context.getString(R.string.supabase_project_id);
         String apiKey = context.getString(R.string.supabase_api_key);
 
-        // Assuming you add an 'email' column to your users table for easy lookups
+        // query user by email
         String url = "https://" + projectId + ".supabase.co/rest/v1/users?email=eq." + email + "&select=*";
 
         OkHttpClient client = new OkHttpClient();
+
+        // request
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("apikey", apiKey)
@@ -71,20 +92,33 @@ public class LoginUser {
                 .get()
                 .build();
 
+        // send request
         client.newCall(request).enqueue(new Callback() {
+
             @Override
-            public void onFailure(Call call, IOException e) { callback.onFailure(e.getMessage()); }
+            public void onFailure(Call call, IOException e) {
+                // network error
+                callback.onFailure(e.getMessage());
+            }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
+
                 try {
+                    // parse array
                     JSONArray array = new JSONArray(response.body().string());
+
                     if (array.length() > 0) {
+                        // return first user
                         callback.onSuccess(array.getJSONObject(0));
                     } else {
-                        callback.onFailure("User profile not found");
+                        callback.onFailure("user profile not found");
                     }
-                } catch (Exception e) { callback.onFailure("Sync error"); }
+
+                } catch (Exception e) {
+                    callback.onFailure("sync error");
+                }
+
                 response.close();
             }
         });

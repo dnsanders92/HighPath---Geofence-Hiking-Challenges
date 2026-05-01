@@ -36,24 +36,22 @@ public class GetUserAccount {
 
                         if (user == null) return;
 
-                        // Name - String concatenation handles nulls by showing "null",
-                        // but a ternary check is cleaner
+                        // set name
                         String first = user.firstName != null ? user.firstName : "";
                         String last = user.surname != null ? user.surname : "";
                         userName.setText(first + " " + last);
 
-                        // Stats - Using helper to prevent NullPointerException and handle the display
+                        // set stats
                         totalDistance.setText(getSafeInt(user.totalDistanceKm) + " km");
                         totalElevation.setText(getSafeInt(user.totalElevationM) + " m");
-
-                        // Fixed: Removed String.valueOf() wrap around the emoji which was causing redundant calls
                         completedActivities.setText(getSafeInt(user.completedActivities) + "  ⛰️");
-                        completedChallenges.setText(getSafeInt(user.completedChallenges) + "  \uD83C\uDFC6");
+                        completedChallenges.setText(getSafeInt(user.completedChallenges) + "  🏆");
 
-                        // Time - Using the updated formatTime which now accepts 'Long' correctly
+                        // set times
                         totalTimeOutside.setText(formatTime(user.totalTimeOutsideSeconds));
                         totalTimeMoving.setText(formatTime(user.totalMovingTimeSeconds));
 
+                        // set images
                         if (user.bannerImage != null) {
                             bannerImage.setImageBitmap(
                                     BitmapFactory.decodeByteArray(user.bannerImage, 0, user.bannerImage.length)
@@ -71,12 +69,12 @@ public class GetUserAccount {
         });
     }
 
-    // Helper to safely handle Integer objects from the database
+    // safe int
     private static int getSafeInt(Integer value) {
         return value != null ? value : 0;
     }
 
-    // Updated to accept Long (wrapper) or long (primitive)
+    // format seconds → h/m
     private static String formatTime(Long totalSeconds) {
         if (totalSeconds == null || totalSeconds <= 0) return "0m";
 

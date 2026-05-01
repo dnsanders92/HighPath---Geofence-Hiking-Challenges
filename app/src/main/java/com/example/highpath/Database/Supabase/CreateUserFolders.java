@@ -35,6 +35,8 @@ public class CreateUserFolders {
     }
 
     public void createFolders(String userId, FolderCreationListener listener) {
+
+        // folder paths
         final String[] paths = {
                 userId + "/gpx_files/.keep",
                 userId + "/user_images/.keep",
@@ -45,7 +47,10 @@ public class CreateUserFolders {
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger failureCount = new AtomicInteger(0);
 
-        for (String path : paths) {
+        // create each folder
+        for (int i = 0; i < paths.length; i++) {
+
+            String path = paths[i];
             String fullUrl = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + path;
 
             RequestBody body = RequestBody.create("", MediaType.parse("text/plain"));
@@ -59,30 +64,35 @@ public class CreateUserFolders {
                     .build();
 
             client.newCall(request).enqueue(new Callback() {
+
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    Log.e(TAG, "Network error creating folder: " + path + " - " + e.getMessage());
+                    // first failure triggers callback
+                    Log.e(TAG, "network error creating folder: " + path + " - " + e.getMessage());
                     if (failureCount.incrementAndGet() == 1) {
-                        listener.onFailure("Network error: " + e.getMessage());
+                        listener.onFailure("network error: " + e.getMessage());
                     }
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
+
                     String responseBody = response.body() != null ? response.body().string() : "";
 
                     if (response.isSuccessful()) {
-                        Log.d(TAG, "Folder created successfully: " + path);
+                        // successful folder creation
+                        Log.d(TAG, "folder created: " + path);
                         if (successCount.incrementAndGet() == totalPaths) {
-                            Log.d(TAG, "All folders created successfully");
                             listener.onSuccess();
                         }
                     } else {
-                        Log.e(TAG, "Failed to create folder: " + path + " - " + response.code() + " - " + responseBody);
+                        // failure triggers callback
+                        Log.e(TAG, "failed to create folder: " + path + " - " + response.code() + " - " + responseBody);
                         if (failureCount.incrementAndGet() == 1) {
-                            listener.onFailure("Failed to create folder: " + path + " - " + response.code() + " - " + responseBody);
+                            listener.onFailure("failed to create folder: " + path + " - " + response.code());
                         }
                     }
+
                     response.close();
                 }
             });

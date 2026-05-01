@@ -23,10 +23,11 @@ public class SyncTrailMapImages {
     public static void sync(Context context, int userId) {
         new Thread(() -> {
             try {
+                // supabase connections
                 String supabaseKey = context.getString(R.string.supabase_api_key);
                 String projectId = context.getString(R.string.supabase_project_id);
 
-                // 1. List all files in the user's trail_map_images folder
+                // list all files in user folder
                 String listUrl = "https://" + projectId + ".supabase.co/storage/v1/object/list/user-data";
                 String body = "{\"prefix\":\"" + userId + "/trail_map_images/\",\"limit\":100}";
 
@@ -40,66 +41,76 @@ public class SyncTrailMapImages {
                 conn.getOutputStream().write(body.getBytes("utf-8"));
 
                 int responseCode = conn.getResponseCode();
-                Log.d(TAG, "List response code: " + responseCode);
+                Log.d(TAG, "list response code: " + responseCode);
 
                 if (responseCode != 200) {
-                    Log.e(TAG, "Failed to list images");
+                    Log.e(TAG, "failed to list images");
                     conn.disconnect();
                     return;
                 }
 
+                // read list response
                 BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 StringBuilder sb = new StringBuilder();
                 String line;
-                while ((line = br.readLine()) != null) sb.append(line);
+
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+
                 conn.disconnect();
 
                 JSONArray files = new JSONArray(sb.toString());
-                Log.d(TAG, "Found " + files.length() + " trail map images");
+                Log.d(TAG, "found " + files.length() + " trail map images");
 
                 LocalDatabase db = LocalDatabase.getInstance(context);
 
-                // 2. For each file download and save to DB
+                // download each file
                 for (int i = 0; i < files.length(); i++) {
+
                     JSONObject file = files.getJSONObject(i);
                     String fileName = file.getString("name");
 
                     if (fileName.equals(".keep")) continue;
 
                     String activityId = fileName.replace(".png", "");
-                    Log.d(TAG, "Downloading image for activity: " + activityId);
+                    Log.d(TAG, "downloading image for activity: " + activityId);
 
-                    String imageUrl = "https://" + projectId + ".supabase.co/storage/v1/object/user-data/"
-                            + userId + "/trail_map_images/" + fileName;
+                    String imageUrl =
+                            "https://" + projectId + ".supabase.co/storage/v1/object/user-data/"
+                                    + userId + "/trail_map_images/" + fileName;
 
+                    // first attempt
                     byte[] imageBytes = attemptDownload(imageUrl, supabaseKey);
 
                     if (imageBytes != null) {
                         db.activityDao().updateTrailMapImage(activityId, imageBytes);
-                        Log.d(TAG, "Saved image for activity: " + activityId + " (" + imageBytes.length + " bytes)");
+                        Log.d(TAG, "saved image for " + activityId + " (" + imageBytes.length + " bytes)");
                     } else {
-                        // Retry once
-                        Log.w(TAG, "First attempt failed for " + activityId + " — retrying...");
+                        // retry once
+                        Log.w(TAG, "first attempt failed for " + activityId + " — retrying...");
                         imageBytes = attemptDownload(imageUrl, supabaseKey);
+
                         if (imageBytes != null) {
                             db.activityDao().updateTrailMapImage(activityId, imageBytes);
-                            Log.d(TAG, "Retry succeeded for activity: " + activityId);
+                            Log.d(TAG, "retry succeeded for " + activityId);
                         } else {
-                            Log.e(TAG, "Retry failed for activity: " + activityId);
+                            Log.e(TAG, "retry failed for " + activityId);
                         }
                     }
                 }
 
-                Log.d(TAG, "Trail map image sync complete.");
+                Log.d(TAG, "trail map image sync complete");
 
             } catch (Exception e) {
-                Log.e(TAG, "Failed to sync trail map images", e);
+                Log.e(TAG, "failed to sync trail map images", e);
             }
         }).start();
     }
 
     private static byte[] attemptDownload(String imageUrl, String supabaseKey) {
         try {
+            // open connection
             URL imgUrl = new URL(imageUrl);
             HttpURLConnection imgConn = (HttpURLConnection) imgUrl.openConnection();
             imgConn.setRequestMethod("GET");
@@ -109,16 +120,20 @@ public class SyncTrailMapImages {
             imgConn.setReadTimeout(15000);
 
             int imgResponseCode = imgConn.getResponseCode();
-            Log.d(TAG, "Image download response: " + imgResponseCode);
+            Log.d(TAG, "image download response: " + imgResponseCode);
 
             if (imgResponseCode == 200) {
+                // read bytes
                 InputStream is = imgConn.getInputStream();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
                 byte[] buffer = new byte[4096];
                 int bytesRead;
+
                 while ((bytesRead = is.read(buffer)) != -1) {
                     baos.write(buffer, 0, bytesRead);
                 }
+
                 is.close();
                 imgConn.disconnect();
                 return baos.toByteArray();
@@ -128,7 +143,7 @@ public class SyncTrailMapImages {
             return null;
 
         } catch (Exception e) {
-            Log.e(TAG, "Download attempt failed: " + e.getMessage());
+            Log.e(TAG, "download attempt failed: " + e.getMessage());
             return null;
         }
     }

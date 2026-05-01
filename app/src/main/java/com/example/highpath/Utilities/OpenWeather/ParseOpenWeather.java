@@ -18,7 +18,7 @@ public class ParseOpenWeather {
             JSONObject root = new JSONObject(json);
             JSONArray list = root.getJSONArray("list");
 
-            // Using TreeMap keeps days in order (e.g., Monday, Tuesday...)
+            // Using keeps days in order (e.g., Monday, Tuesday...)
             Map<String, Double> minMap = new TreeMap<>();
             Map<String, Double> maxMap = new TreeMap<>();
             Map<String, String> conditionMap = new HashMap<>();
@@ -30,7 +30,7 @@ public class ParseOpenWeather {
                 double min = main.getDouble("temp_min");
                 double max = main.getDouble("temp_max");
 
-                // Grab the condition (e.g., "Rain", "Clouds")
+                // get weather conditions
                 String condition = item.getJSONArray("weather")
                         .getJSONObject(0)
                         .getString("main");
@@ -41,7 +41,7 @@ public class ParseOpenWeather {
                 if (!minMap.containsKey(day)) {
                     minMap.put(day, min);
                     maxMap.put(day, max);
-                    // Store the first condition we see for that day
+
                     conditionMap.put(day, condition);
                 } else {
                     minMap.put(day, Math.min(minMap.get(day), min));
@@ -55,14 +55,13 @@ public class ParseOpenWeather {
                 String d = days.get(i);
                 data.LowTemps.add(minMap.get(d));
                 data.HighTemps.add(maxMap.get(d));
-                // Add the stored condition to your list
                 data.Conditions.add(conditionMap.get(d));
             }
 
             data.buildHighLowStrings();
 
         } catch (Exception e) {
-            // Log error if needed
+
         }
 
         return data;

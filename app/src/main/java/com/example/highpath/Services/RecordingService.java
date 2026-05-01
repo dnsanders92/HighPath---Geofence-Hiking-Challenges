@@ -31,10 +31,10 @@ public class RecordingService extends Service {
     private static final String TAG = "RecordingService";
     private static final String CHANNEL_ID = "record_channel";
 
-    // Broadcast Action
+    // broadcast Action
     public static final String ACTION_RECORDING_STATUS = "com.example.highpath.RECORDING_STATUS";
 
-    // Static flag for instant checking
+    // static flag for instant checking
     public static boolean isRecording = false;
 
     private static final String EXTRA_FILE_PATH = "extra_file_path";
@@ -142,11 +142,9 @@ public class RecordingService extends Service {
 
         if (gpxBuilder != null) {
             try {
-                // 1. Properly close the XML file first
+
                 gpxBuilder.gpxFooter();
 
-                // 2. Hand off the file path to the Builder.
-                // The Builder will handle parsing on a background thread.
                 new ActivityBuilder().insertActivity(getApplicationContext(), fullPath);
                 LiveTrackManager.getInstance().clear();
 

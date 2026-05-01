@@ -27,8 +27,10 @@ public class InsertChallengeItem {
     public static void insert(Context context, int userId, ChallengeItemEntity item, InsertCallback callback) {
         new Thread(() -> {
             try {
+                // supabase key
                 String supabaseKey = context.getString(R.string.supabase_api_key);
 
+                // build json
                 JSONObject json = new JSONObject();
                 json.put("user_id", userId);
                 json.put("challenge_id", item.getChallengeId());
@@ -38,6 +40,7 @@ public class InsertChallengeItem {
                 json.put("longitude", item.getLongitude());
                 json.put("is_completed", true);
 
+                // open connection
                 URL url = new URL(SUPABASE_URL);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
@@ -46,14 +49,17 @@ public class InsertChallengeItem {
                 conn.setRequestProperty("Authorization", "Bearer " + supabaseKey);
                 conn.setDoOutput(true);
 
+                // send body
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(json.toString().getBytes("utf-8"));
                 }
 
+                // read response
                 int responseCode = conn.getResponseCode();
-                Log.d(TAG, "Response code: " + responseCode);
+                Log.d(TAG, "response code: " + responseCode);
 
                 if (responseCode == 201) {
+                    // success
                     callback.onSuccess();
                 } else {
                     BufferedReader errReader = new BufferedReader(
@@ -61,14 +67,16 @@ public class InsertChallengeItem {
                     StringBuilder errBody = new StringBuilder();
                     String errLine;
                     while ((errLine = errReader.readLine()) != null) errBody.append(errLine);
-                    Log.e(TAG, "Error: " + errBody);
-                    callback.onFailure("Response code: " + responseCode + " - " + errBody);
+
+                    Log.e(TAG, "error: " + errBody);
+                    callback.onFailure("response code: " + responseCode + " - " + errBody);
                 }
 
                 conn.disconnect();
 
             } catch (Exception e) {
-                Log.e(TAG, "Failed to insert challenge item", e);
+                // unexpected failure
+                Log.e(TAG, "failed to insert challenge item", e);
                 callback.onFailure(e.getMessage());
             }
         }).start();

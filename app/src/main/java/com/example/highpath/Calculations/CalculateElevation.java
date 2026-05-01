@@ -21,7 +21,7 @@ public class CalculateElevation {
         // [0] = totalElevationGain, [1] = totalElevationLoss
         double[] elevations = new double[2];
 
-        // Safety: Ensure list exists and isn't just one point
+        // check list exists and isn't just one point
         if (altitudes == null || altitudes.size() < 2) {
             return elevations; // returns [0.0, 0.0]
         }

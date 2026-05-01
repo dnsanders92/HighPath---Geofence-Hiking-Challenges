@@ -38,7 +38,7 @@ public class CreateUser {
             authJson.put("email", email);
             authJson.put("password", password);
         } catch (JSONException e) {
-            callback.onFailure("Auth JSON Error");
+            callback.onFailure("auth json error");
             return;
         }
 
@@ -54,16 +54,18 @@ public class CreateUser {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                callback.onFailure("Auth Network Failure: " + e.getMessage());
+                callback.onFailure("auth network failure: " + e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    addUser(context, email, firstName, surname, monthOfBirth, yearOfBirth, 0, 0, 0, 0, 0L, 0L, callback);
+                    // create db user after auth success
+                    addUser(context, email, firstName, surname, monthOfBirth, yearOfBirth,
+                            0, 0, 0, 0, 0L, 0L, callback);
                 } else {
-                    String error = response.body() != null ? response.body().string() : "Unknown Auth Error";
-                    callback.onFailure("Auth Failed: " + error);
+                    String error = response.body() != null ? response.body().string() : "unknown auth error";
+                    callback.onFailure("auth failed: " + error);
                 }
                 response.close();
             }
@@ -105,7 +107,7 @@ public class CreateUser {
             json.put("total_time_outside_seconds", totalTimeOutsideSeconds);
             json.put("total_moving_time_seconds", totalMovingTimeSeconds);
         } catch (JSONException e) {
-            callback.onFailure("JSON Construction Error: " + e.getMessage());
+            callback.onFailure("json build error: " + e.getMessage());
             return;
         }
 
@@ -124,7 +126,7 @@ public class CreateUser {
         client.newCall(dbRequest).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                callback.onFailure("Database network failure: " + e.getMessage());
+                callback.onFailure("db network failure: " + e.getMessage());
             }
 
             @Override
@@ -134,12 +136,15 @@ public class CreateUser {
                     try {
                         JSONArray jsonArray = new JSONArray(responseBody);
                         long generatedId = jsonArray.getJSONObject(0).getLong("user_id");
+
+                        // create storage folders for user
                         createStorageFolders(client, storageBaseUrl, apiKey, generatedId, callback);
+
                     } catch (JSONException e) {
-                        callback.onFailure("Parsing error: " + e.getMessage());
+                        callback.onFailure("parse error: " + e.getMessage());
                     }
                 } else {
-                    callback.onFailure("DB Code: " + response.code());
+                    callback.onFailure("db code: " + response.code());
                 }
                 response.close();
             }
@@ -147,6 +152,8 @@ public class CreateUser {
     }
 
     private static void createStorageFolders(OkHttpClient client, String baseUrl, String apiKey, long userId, UserCallback callback) {
+
+        // create folders for user on supabase bucket.
         String[] folderPaths = {
                 userId + "/gpx_files/.keep",
                 userId + "/user_images/.keep",
@@ -155,8 +162,12 @@ public class CreateUser {
 
         AtomicInteger completedRequests = new AtomicInteger(0);
 
-        for (String path : folderPaths) {
+        for (int i = 0; i < folderPaths.length; i++) {
+
+            String path = folderPaths[i];
+
             RequestBody emptyBody = RequestBody.create("", MediaType.parse("text/plain"));
+
             Request storageRequest = new Request.Builder()
                     .url(baseUrl + path)
                     .addHeader("apikey", apiKey)
@@ -166,7 +177,9 @@ public class CreateUser {
 
             client.newCall(storageRequest).enqueue(new Callback() {
                 @Override
-                public void onFailure(Call call, IOException e) { checkCompletion(); }
+                public void onFailure(Call call, IOException e) {
+                    checkCompletion();
+                }
 
                 @Override
                 public void onResponse(Call call, Response response) {
@@ -174,6 +187,7 @@ public class CreateUser {
                     checkCompletion();
                 }
 
+                // track when all folders are created
                 private void checkCompletion() {
                     if (completedRequests.incrementAndGet() == folderPaths.length) {
                         callback.onSuccess(userId);

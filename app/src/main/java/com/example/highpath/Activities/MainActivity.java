@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.example.highpath.Database.DatabaseServices.CheckUserState;
-import com.example.highpath.Fragments.OtherFragments.SplashScreenFragment;
 import com.example.highpath.Navigation.NavigationControl;
 import com.example.highpath.R;
 import com.example.highpath.Services.LocationService;
@@ -36,17 +35,20 @@ public class MainActivity extends AppCompatActivity {
         // Checks if user table is empty. Local db will only ever have one user.
         CheckUserState.checkUser(this);
 
+        // Connects navigation bar.
         BottomNavigationView navBar = findViewById(R.id.bottom_navigation);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         new NavigationControl(fragmentManager, navBar);
 
+        // Calls location service.
         locationService = new LocationService(this);
         checkAndRequestPermissions();
 
     }
 
+    // checks permissions
     private void checkAndRequestPermissions() {
         String[] permissions = {
                 Manifest.permission.ACCESS_FINE_LOCATION,

@@ -40,12 +40,23 @@ public class RegisterFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // connect views
         bindViews(view);
+
+        // setup month dropdown
         setupMonthDropdown();
-        completeRegistration.setOnClickListener(v -> submitRegistration());
+
+        completeRegistration.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                submitRegistration();
+            }
+        });
     }
 
     private void bindViews(View view) {
+        // connect ui
         registerEmail        = view.findViewById(R.id.registerEmail);
         registerPassword     = view.findViewById(R.id.registerPassword);
         confirmPassword      = view.findViewById(R.id.confirmPassword);
@@ -57,11 +68,14 @@ public class RegisterFragment extends Fragment {
     }
 
     private void setupMonthDropdown() {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, MONTHS);
+        // month dropdown adapter
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, MONTHS);
         birthMonth.setAdapter(adapter);
     }
 
     private void submitRegistration() {
+        // get input
         String email = registerEmail.getText().toString().trim();
         String password = registerPassword.getText().toString().trim();
         String confirmPw = confirmPassword.getText().toString().trim();
@@ -70,7 +84,7 @@ public class RegisterFragment extends Fragment {
         String bMonth = birthMonth.getText().toString().trim();
         String bYearStr = birthYear.getText().toString().trim();
 
-        // Validation
+        // validation
         if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(getContext(), "Please fill in all account credentials", Toast.LENGTH_SHORT).show();
             return;
@@ -83,19 +97,24 @@ public class RegisterFragment extends Fragment {
 
         Integer bYear = bYearStr.isEmpty() ? 0 : Integer.parseInt(bYearStr);
 
+        // disable button
         completeRegistration.setEnabled(false);
         completeRegistration.setText("Registering...");
 
-        // Start Auth + Profile Registration
+        // create user in supabase
         CreateUser.signUp(
                 requireContext(),
                 email, password,
                 fName, sName, bMonth, bYear,
                 new CreateUser.UserCallback() {
+
                     @Override
                     public void onSuccess(long userId) {
+
+                        // save user locally
                         CreateLocalUser.addUser(requireContext(), (int) userId, fName, sName, bMonth, bYear);
 
+                        // go to main activity
                         if (getActivity() != null) {
                             getActivity().runOnUiThread(() -> {
                                 Intent intent = new Intent(requireContext(), MainActivity.class);
@@ -107,7 +126,8 @@ public class RegisterFragment extends Fragment {
 
                     @Override
                     public void onFailure(String error) {
-                        Log.e("RegisterFragment", "Error: " + error);
+                        Log.e("RegisterFragment", "error: " + error);
+
                         if (getActivity() != null) {
                             getActivity().runOnUiThread(() -> {
                                 completeRegistration.setEnabled(true);
