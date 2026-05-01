@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -30,6 +31,7 @@ public class SummaryFragment extends Fragment {
     private TextView nameView, distanceView, elevationView, actualTimeView, movingTimeView;
     private ListView splitsList;
     private ImageView trailMapImage;
+    private ImageButton btnEditActivity;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -47,13 +49,26 @@ public class SummaryFragment extends Fragment {
         }
 
         // connect ui
-        nameView       = view.findViewById(R.id.activityNameSummary);
-        distanceView   = view.findViewById(R.id.distanceSummary);
-        elevationView  = view.findViewById(R.id.elevationSummary);
-        actualTimeView = view.findViewById(R.id.actualTimeSummary);
-        movingTimeView = view.findViewById(R.id.movingTimeSummary);
-        splitsList     = view.findViewById(R.id.splitsListViewSummary);
-        trailMapImage  = view.findViewById(R.id.gpxTrailMap);
+        nameView        = view.findViewById(R.id.activityNameSummary);
+        distanceView    = view.findViewById(R.id.distanceSummary);
+        elevationView   = view.findViewById(R.id.elevationSummary);
+        actualTimeView  = view.findViewById(R.id.actualTimeSummary);
+        movingTimeView  = view.findViewById(R.id.movingTimeSummary);
+        splitsList      = view.findViewById(R.id.splitsListViewSummary);
+        trailMapImage   = view.findViewById(R.id.gpxTrailMap);
+        btnEditActivity = view.findViewById(R.id.btnEditActivity);
+
+        // edit button
+        btnEditActivity.setOnClickListener(v -> {
+            ModifyActivityFragment fragment = new ModifyActivityFragment();
+            Bundle args = new Bundle();
+            args.putString("activity_id", activityId);
+            fragment.setArguments(args);
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
 
         // load data
         loadActivityFromDb();

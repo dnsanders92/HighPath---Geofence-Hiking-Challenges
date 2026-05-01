@@ -12,22 +12,42 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Full bleed image - no margins -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- Full bleed image with edit button overlay -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="250dp"
-            app:cardCornerRadius="0dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp">
+            android:layout_height="250dp">
 
-            <ImageButton
-                android:id="@+id/gpxTrailMap"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@android:color/darker_gray"
-                android:src="@drawable/trail_placeholder"
-                android:scaleType="centerCrop" />
-        </com.google.android.material.card.MaterialCardView>
+                app:cardCornerRadius="0dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <ImageButton
+                    android:id="@+id/gpxTrailMap"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/darker_gray"
+                    android:src="@drawable/trail_placeholder"
+                    android:scaleType="centerCrop" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Edit button top right -->
+            <ImageButton
+                android:id="@+id/btnEditActivity"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="12dp"
+                android:background="@drawable/rounded_corners_container"
+                android:src="@drawable/edit_icon"
+                android:scaleType="fitCenter"
+                android:padding="10dp"
+                android:elevation="4dp" />
+
+        </FrameLayout>
 
         <!-- Content below image -->
         <LinearLayout
