@@ -13,7 +13,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_gravity="top|start"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="35dp"
         android:layout_marginStart="10dp"
         android:src="@drawable/layers"
         android:padding="10dp"
