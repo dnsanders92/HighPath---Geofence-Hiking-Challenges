@@ -14,6 +14,7 @@ import com.example.highpath.Database.Entities.ActivityEntity;
 import com.example.highpath.R;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -21,13 +22,19 @@ import java.util.Locale;
 public class ActivityAdapter extends BaseAdapter {
 
     private final Context context;
-    private final List<ActivityEntity> activities;
+    private List<ActivityEntity> activities; // Removed final
     private final LayoutInflater inflater;
 
     public ActivityAdapter(Context context, List<ActivityEntity> activities) {
         this.context = context;
         this.activities = activities;
         this.inflater = LayoutInflater.from(context);
+    }
+
+    // New method to refresh list after searching/sorting
+    public void updateList(List<ActivityEntity> newList) {
+        this.activities = newList;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -41,12 +48,9 @@ public class ActivityAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
         ViewHolder holder;
-
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.activities_list_item, parent, false);
-
             holder = new ViewHolder();
             holder.activityName      = convertView.findViewById(R.id.activityName);
             holder.activityDate      = convertView.findViewById(R.id.activityDate);
@@ -56,7 +60,6 @@ public class ActivityAdapter extends BaseAdapter {
             holder.activityPace      = convertView.findViewById(R.id.activityPace);
             holder.image             = convertView.findViewById(R.id.section1Image);
             holder.trophyBadge       = convertView.findViewById(R.id.trophyBadgeContainer);
-
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -65,7 +68,6 @@ public class ActivityAdapter extends BaseAdapter {
         ActivityEntity a = activities.get(position);
 
         holder.activityName.setText(a.getActivityName() != null ? a.getActivityName() : "Unnamed Activity");
-
         long timestamp = a.getTimestamp() != null ? a.getTimestamp() : 0L;
         holder.activityDate.setText(formatDate(timestamp));
 
@@ -82,14 +84,9 @@ public class ActivityAdapter extends BaseAdapter {
         holder.activityPace.setText(formatPace(pace));
 
         if (holder.trophyBadge != null) {
-            if (a.getIsChallenge() != null && a.getIsChallenge()) {
-                holder.trophyBadge.setVisibility(View.VISIBLE);
-            } else {
-                holder.trophyBadge.setVisibility(View.GONE);
-            }
+            holder.trophyBadge.setVisibility((a.getIsChallenge() != null && a.getIsChallenge()) ? View.VISIBLE : View.GONE);
         }
 
-        // Set trail map image if available, otherwise hide the ImageView
         if (holder.image != null) {
             byte[] imageBytes = a.getTrailMapImage();
             if (imageBytes != null && imageBytes.length > 0) {
@@ -104,25 +101,19 @@ public class ActivityAdapter extends BaseAdapter {
                 holder.image.setVisibility(View.GONE);
             }
         }
-
         return convertView;
     }
 
     private String formatDate(long timestamp) {
         if (timestamp == 0) return "--";
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.UK);
-        return sdf.format(new Date(timestamp));
+        return new SimpleDateFormat("dd MMM yyyy", Locale.UK).format(new Date(timestamp));
     }
 
     private String formatTime(long seconds) {
         if (seconds <= 0) return "--";
-        long hours   = seconds / 3600;
+        long hours = seconds / 3600;
         long minutes = (seconds % 3600) / 60;
-        if (hours > 0) {
-            return hours + "h " + minutes + "m";
-        } else {
-            return minutes + "m";
-        }
+        return hours > 0 ? hours + "h " + minutes + "m" : minutes + "m";
     }
 
     private String formatPace(double paceMinPerKm) {
@@ -133,8 +124,7 @@ public class ActivityAdapter extends BaseAdapter {
     }
 
     static class ViewHolder {
-        TextView activityName, activityDate, activityDistance,
-                activityElevation, activityTime, activityPace;
+        TextView activityName, activityDate, activityDistance, activityElevation, activityTime, activityPace;
         ImageView image;
         View trophyBadge;
     }

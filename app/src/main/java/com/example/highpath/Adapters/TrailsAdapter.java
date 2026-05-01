@@ -6,12 +6,9 @@ import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.example.highpath.Database.Entities.TrailEntity;
 import com.example.highpath.R;
@@ -19,46 +16,70 @@ import com.example.highpath.R;
 import java.util.List;
 import java.util.Locale;
 
-public class TrailsAdapter extends ArrayAdapter<TrailEntity> {
+public class TrailsAdapter extends BaseAdapter {
+
+    private final Context context;
+    private List<TrailEntity> trails;
+    private final LayoutInflater inflater;
 
     public TrailsAdapter(Context context, List<TrailEntity> trails) {
-        super(context, 0, trails);
+        this.context = context;
+        this.trails = trails;
+        this.inflater = LayoutInflater.from(context);
     }
 
-    @NonNull
+    public void updateList(List<TrailEntity> newList) {
+        this.trails = newList;
+        notifyDataSetChanged();
+    }
+
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+    public int getCount() { return trails.size(); }
+
+    @Override
+    public Object getItem(int position) { return trails.get(position); }
+
+    @Override
+    public long getItemId(int position) { return position; }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext())
-                    .inflate(R.layout.trail_list_item, parent, false);
+            convertView = inflater.inflate(R.layout.trail_list_item, parent, false);
+            holder = new ViewHolder();
+            holder.trailImage = convertView.findViewById(R.id.trailImage);
+            holder.trailName = convertView.findViewById(R.id.trailName);
+            holder.trailRegion = convertView.findViewById(R.id.trailRegion);
+            holder.trailDistance = convertView.findViewById(R.id.trailDistance);
+            holder.trailAscent = convertView.findViewById(R.id.trailAscent);
+            holder.trailDifficulty = convertView.findViewById(R.id.trailDifficulty);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
         }
 
-        TrailEntity trail = getItem(position);
-
-        ImageView trailImage     = convertView.findViewById(R.id.trailImage);
-        TextView trailName       = convertView.findViewById(R.id.trailName);
-        TextView trailRegion     = convertView.findViewById(R.id.trailRegion);
-        TextView trailDistance   = convertView.findViewById(R.id.trailDistance);
-        TextView trailAscent     = convertView.findViewById(R.id.trailAscent);
-        TextView trailDifficulty = convertView.findViewById(R.id.trailDifficulty);
-
+        TrailEntity trail = trails.get(position);
         if (trail != null) {
-            // Load thumbnail from DB, fall back to drawable if null
             byte[] thumbnailBytes = trail.getPreviewImage();
             if (thumbnailBytes != null && thumbnailBytes.length > 0) {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(thumbnailBytes, 0, thumbnailBytes.length);
-                trailImage.setImageBitmap(bitmap);
+                holder.trailImage.setImageBitmap(bitmap);
             } else {
-                trailImage.setImageResource(R.drawable.errigal);
+                holder.trailImage.setImageResource(R.drawable.errigal);
             }
 
-            trailName.setText(trail.getName());
-            trailRegion.setText(trail.getRegion());
-            trailDistance.setText(String.format(Locale.UK, "%.1f km", trail.getDistanceKm()));
-            trailAscent.setText(String.format(Locale.UK, "%d m", trail.getAscentM()));
-            trailDifficulty.setText(trail.getDifficulty());
+            holder.trailName.setText(trail.getName());
+            holder.trailRegion.setText(trail.getRegion());
+            holder.trailDistance.setText(String.format(Locale.UK, "%.1f km", trail.getDistanceKm()));
+            holder.trailAscent.setText(String.format(Locale.UK, "%d m", trail.getAscentM()));
+            holder.trailDifficulty.setText(trail.getDifficulty());
         }
-
         return convertView;
+    }
+
+    static class ViewHolder {
+        ImageView trailImage;
+        TextView trailName, trailRegion, trailDistance, trailAscent, trailDifficulty;
     }
 }

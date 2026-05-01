@@ -1,48 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#F8F8F8">
 
+    <!-- Header Container -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="65dp"
         android:background="#E6E6E6"
         android:paddingHorizontal="12dp">
 
-        <!-- Search box -->
-        <EditText
-            android:id="@+id/searchChallenges"
-            android:layout_width="0dp"
+        <!-- Search Box Container -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_centerVertical="true"
-            android:layout_alignParentStart="true"
-            android:layout_toStartOf="@+id/sortSpinner"
-            android:layout_marginEnd="8dp"
-            android:background="@drawable/rounded_corners_container"
-            android:hint="Search challenges..."
-            android:textSize="13sp"
-            android:textColorHint="#B0B0B0"
-            android:textColor="#1A1A1A"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:inputType="text"
-            android:imeOptions="actionSearch"
-            android:singleLine="true" />
+            android:layout_marginEnd="52dp">
 
-        <!-- Sort dropdown -->
-        <Spinner
-            android:id="@+id/sortSpinner"
+            <EditText
+                android:id="@+id/searchChallenges"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/rounded_corners_container"
+                android:hint="Search challenges..."
+                android:textSize="13sp"
+                android:textColorHint="#B0B0B0"
+                android:textColor="#1A1A1A"
+                android:paddingStart="12dp"
+                android:paddingEnd="40dp"
+                android:inputType="text"
+                android:imeOptions="actionSearch"
+                android:singleLine="true" />
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/search_icon"
+                android:alpha="0.5" />
+        </RelativeLayout>
+
+        <!-- Action Button (Add/Sort) -->
+        <ImageButton
+            android:id="@+id/btnAddChallenge"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
-            android:background="@drawable/rounded_corners_container" />
+            android:layout_centerVertical="true"
+            android:src="@drawable/add_icon"
+            android:padding="12dp"
+            android:scaleType="centerInside"
+            android:background="@drawable/rounded_corners_container"
+            android:contentDescription="Challenge Options" />
 
     </RelativeLayout>
 
+    <!-- Title Label -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -54,6 +71,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginBottom="8dp" />
 
+    <!-- List View -->
     <ListView
         android:id="@+id/challenges_list_view"
         android:layout_width="match_parent"

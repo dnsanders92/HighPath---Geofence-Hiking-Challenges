@@ -17,12 +17,18 @@ import java.util.List;
 
 public class ChallengesAdapter extends BaseAdapter {
 
-    private final List<ChallengesEntity> challenges;
+    private List<ChallengesEntity> challenges; // Removed final
     private final LayoutInflater inflater;
 
     public ChallengesAdapter(Context context, List<ChallengesEntity> challenges) {
         this.challenges = challenges;
         this.inflater = LayoutInflater.from(context);
+    }
+
+    // Method to refresh the list when searching
+    public void updateList(List<ChallengesEntity> newList) {
+        this.challenges = newList;
+        notifyDataSetChanged();
     }
 
     @Override

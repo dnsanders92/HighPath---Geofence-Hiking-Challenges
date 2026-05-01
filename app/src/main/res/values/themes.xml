@@ -2,15 +2,17 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.HighPath" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
 
-        <!-- Remove Material3 purple highlight on BottomNavigationView -->
+        <!-- 1. Force Status Bar to Black -->
+        <item name="android:statusBarColor">#000000</item>
+
+        <!-- 2. Ensure icons are white (light) so they are visible on black -->
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Existing Customizations -->
         <item name="colorSecondaryContainer">@android:color/transparent</item>
         <item name="colorOnSecondaryContainer">@android:color/black</item>
-
-        <!-- Remove purple ripple effect -->
         <item name="rippleColor">@android:color/transparent</item>
-
     </style>
 
     <style name="CircleImageStyle">

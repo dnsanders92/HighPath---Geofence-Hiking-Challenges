@@ -3,10 +3,16 @@ package com.example.highpath.Fragments.NavigationFragments;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,25 +23,41 @@ import com.example.highpath.Database.Entities.TrailEntity;
 import com.example.highpath.Database.LocalDatabase;
 import com.example.highpath.Fragments.OtherFragments.TrailSummaryFragment;
 import com.example.highpath.R;
+import com.example.highpath.Utilities.DynamicSearchHelper;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Executors;
 
 public class ExploreFragment extends Fragment {
 
     private ListView trailsList;
-    private List<TrailEntity> allTrails;
+    private EditText searchBox;
+    private Spinner sortSpinner;
+    private TrailsAdapter adapter;
+
+    private List<TrailEntity> allTrails = new ArrayList<>();
+    private List<TrailEntity> currentDisplayList = new ArrayList<>();
+    private final DynamicSearchHelper<TrailEntity> searchHelper = new DynamicSearchHelper<>();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_explore, container, false);
+
         trailsList = view.findViewById(R.id.trails_list);
+        searchBox = view.findViewById(R.id.searchTrails);
+        sortSpinner = view.findViewById(R.id.sortSpinner);
+
+        setupSearch();
+        setupSortSpinner();
 
         trailsList.setOnItemClickListener((parent, view1, position, id) -> {
-            if (allTrails != null && position < allTrails.size()) {
-                String trailId = allTrails.get(position).getTrailId();
-                navigateToMap(trailId);
+            TrailEntity clickedTrail = (TrailEntity) parent.getItemAtPosition(position);
+            if (clickedTrail != null) {
+                navigateToMap(clickedTrail.getTrailId());
             }
         });
 
@@ -48,15 +70,85 @@ public class ExploreFragment extends Fragment {
         loadTrails();
     }
 
+    private void setupSearch() {
+        if (searchBox == null) return;
+        searchBox.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentDisplayList = searchHelper.filter(allTrails, s.toString(), TrailEntity::getName);
+                applyCurrentSort();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void setupSortSpinner() {
+        String[] options = {"Shortest Distance", "Longest Distance", "Elevation (High to Low)", "Elevation (Low to High)"};
+
+        // Use a layout that doesn't show text in the collapsed state to keep the icon clean
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, options) {
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                // Return an empty view for the selection so it doesn't overlap the icon
+                return new View(getContext());
+            }
+        };
+
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sortSpinner.setAdapter(spinnerAdapter);
+
+        sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                applyCurrentSort();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
+    private void applyCurrentSort() {
+        if (currentDisplayList == null || currentDisplayList.isEmpty()) return;
+
+        int selection = sortSpinner.getSelectedItemPosition();
+        switch (selection) {
+            case 0: // Shortest
+                Collections.sort(currentDisplayList, Comparator.comparingDouble(TrailEntity::getDistanceKm));
+                break;
+            case 1: // Longest
+                Collections.sort(currentDisplayList, (t1, t2) -> Double.compare(t2.getDistanceKm(), t1.getDistanceKm()));
+                break;
+            case 2: // Elevation Descending
+                Collections.sort(currentDisplayList, (t1, t2) -> Integer.compare(t2.getAscentM(), t1.getAscentM()));
+                break;
+            case 3: // Elevation Ascending
+                Collections.sort(currentDisplayList, Comparator.comparingInt(TrailEntity::getAscentM));
+                break;
+        }
+
+        if (adapter != null) {
+            adapter.updateList(new ArrayList<>(currentDisplayList));
+        }
+    }
+
     public void loadTrails() {
         Executors.newSingleThreadExecutor().execute(() -> {
             LocalDatabase db = LocalDatabase.getInstance(getContext());
             allTrails = db.trailDao().getAllTrails();
+            currentDisplayList = new ArrayList<>(allTrails);
 
             new Handler(Looper.getMainLooper()).post(() -> {
                 if (isAdded() && getContext() != null) {
-                    TrailsAdapter adapter = new TrailsAdapter(getContext(), allTrails);
+                    adapter = new TrailsAdapter(getContext(), new ArrayList<>(currentDisplayList));
                     trailsList.setAdapter(adapter);
+                    applyCurrentSort();
                 }
             });
         });
@@ -64,7 +156,6 @@ public class ExploreFragment extends Fragment {
 
     private void navigateToMap(String trailId) {
         TrailSummaryFragment trailSummaryFragment = new TrailSummaryFragment();
-
         Bundle bundle = new Bundle();
         bundle.putString("TRAIL_ID", trailId);
         trailSummaryFragment.setArguments(bundle);
