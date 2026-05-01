@@ -19,6 +19,9 @@ public interface ChallengesDao {
     @Query("SELECT * FROM challenges")
     List<ChallengesEntity> getAllChallenges();
 
+    @Query("SELECT * FROM challenges WHERE completed_summits > 0")
+    List<ChallengesEntity> getActiveChallenges();
+
     @Query("SELECT * FROM challenges WHERE challenge_id = :id LIMIT 1")
     ChallengesEntity getChallengeById(int id);
 
@@ -33,4 +36,7 @@ public interface ChallengesDao {
 
     @Query("UPDATE challenges SET is_completed = 1 WHERE challenge_id = :challengeId")
     void markChallengeCompleted(int challengeId);
+
+    @Query("SELECT * FROM challenges WHERE completed_summits = 0")
+    List<ChallengesEntity> getInactiveChallenges();
 }

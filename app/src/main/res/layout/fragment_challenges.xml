@@ -5,14 +5,12 @@
     android:orientation="vertical"
     android:background="#F8F8F8">
 
-    <!-- Header Container -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="65dp"
         android:background="#E6E6E6"
         android:paddingHorizontal="12dp">
 
-        <!-- Search Box Container -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="40dp"
@@ -44,7 +42,6 @@
                 android:alpha="0.5" />
         </RelativeLayout>
 
-        <!-- Action Button (Add/Sort) -->
         <ImageButton
             android:id="@+id/btnAddChallenge"
             android:layout_width="40dp"
@@ -59,7 +56,6 @@
 
     </RelativeLayout>
 
-    <!-- Title Label -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -71,7 +67,6 @@
         android:layout_marginStart="24dp"
         android:layout_marginBottom="8dp" />
 
-    <!-- List View -->
     <ListView
         android:id="@+id/challenges_list_view"
         android:layout_width="match_parent"
