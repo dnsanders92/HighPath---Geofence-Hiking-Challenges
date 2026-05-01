@@ -68,9 +68,6 @@ public class TrailSummaryFragment extends Fragment {
         loadTrailData();
     }
 
-    /**
-     * Replaces current fragment with the TrailMapFragment
-     */
     private void navigateToMap(String id) {
         TrailMapFragment mapFragment = new TrailMapFragment();
         Bundle bundle = new Bundle();
@@ -83,9 +80,6 @@ public class TrailSummaryFragment extends Fragment {
                 .commit();
     }
 
-    /**
-     * Fetches trail details from Room DB and updates UI
-     */
     private void loadTrailData() {
         if (trailId == null) return;
 
