@@ -16,7 +16,7 @@ import com.example.highpath.Database.Entities.TrackPointEntity;
 import com.example.highpath.Database.LocalDatabase;
 import com.example.highpath.Fragments.NavigationFragments.RecordFragment;
 import com.example.highpath.MapBox.LoadMapBox;
-import com.example.highpath.MapBox.LoadTrailPolyline; // New Import
+import com.example.highpath.MapBox.LoadTrailPolyline;
 import com.example.highpath.R;
 import com.example.highpath.Models.TrailData;
 
@@ -113,14 +113,12 @@ public class TrailMapFragment extends Fragment {
                         LoadMapBox loadMapBox = new LoadMapBox();
                         loadMapBox.initializeMap(requireContext(), mapView, true, startLat, startLon);
 
-                        // 2. Load the Polyline using the new Utility class
+                        // 2. Draw polyline then zoom — both inside getStyle to ensure timing
                         mapView.getMapboxMap().getStyle(style -> {
                             LoadTrailPolyline polylineLoader = new LoadTrailPolyline();
                             polylineLoader.draw(style, lineString);
+                            zoomToFit(fMinLat, fMaxLat, fMinLon, fMaxLon);
                         });
-
-                        // 3. Adjust Camera
-                        zoomToFit(fMinLat, fMaxLat, fMinLon, fMaxLon);
                     }
                 });
             }

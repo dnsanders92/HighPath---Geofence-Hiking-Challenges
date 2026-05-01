@@ -40,4 +40,7 @@ public interface ActivityDao {
 
     @Query("SELECT MAX(elevation_gain) FROM activities")
     Double getHighestElevationGain();
+
+    @Query("UPDATE activities SET trail_map_image = :imageBytes WHERE activity_id = :activityId")
+    void updateTrailMapImage(String activityId, byte[] imageBytes);
 }

@@ -19,6 +19,7 @@ import com.example.highpath.Activities.MainActivity;
 import com.example.highpath.Database.DatabaseServices.CreateLocalUser;
 import com.example.highpath.Database.Supabase.LoginUser;
 import com.example.highpath.Database.Supabase.SyncActivities;
+import com.example.highpath.Database.Supabase.SyncTrailMapImages;
 import com.example.highpath.R;
 
 import org.json.JSONArray;
@@ -82,28 +83,35 @@ public class LoginFragment extends Fragment {
                 try {
                     int userId = userData.getInt("user_id");
 
-                    // 2. Sync activities — splits sync inside to avoid race condition
+                    // 2. Sync activities with callback
                     SyncActivities.fetchUserActivities(appContext, userId,
                             new SyncActivities.ActivitySyncCallback() {
                                 @Override
                                 public void onSuccess(JSONArray activities) {
-                                    CreateLocalUser.syncActivitiesToLocal(appContext, activities);
-                                    Log.d(TAG, "Activities synced on login: " + activities.length());
+                                    Log.d(TAG, "Activities fetched: " + activities.length());
 
-                                    // 3. Sync splits AFTER activities are saved
-                                    SyncActivities.fetchUserSplits(appContext, userId,
-                                            new SyncActivities.SplitSyncCallback() {
-                                                @Override
-                                                public void onSuccess(JSONArray splits) {
-                                                    CreateLocalUser.syncSplitsToLocal(appContext, splits);
-                                                    Log.d(TAG, "Splits synced on login: " + splits.length());
-                                                }
+                                    // Wait for all activities to be written before syncing images and splits
+                                    CreateLocalUser.syncActivitiesToLocal(appContext, activities, () -> {
+                                        Log.d(TAG, "Activities written — starting image and splits sync");
 
-                                                @Override
-                                                public void onFailure(String error) {
-                                                    Log.e(TAG, "Splits sync failed: " + error);
-                                                }
-                                            });
+                                        // 3. Sync trail map images after all activities confirmed written
+                                        SyncTrailMapImages.sync(appContext, userId);
+
+                                        // 4. Sync splits after activities written
+                                        SyncActivities.fetchUserSplits(appContext, userId,
+                                                new SyncActivities.SplitSyncCallback() {
+                                                    @Override
+                                                    public void onSuccess(JSONArray splits) {
+                                                        CreateLocalUser.syncSplitsToLocal(appContext, splits);
+                                                        Log.d(TAG, "Splits synced on login: " + splits.length());
+                                                    }
+
+                                                    @Override
+                                                    public void onFailure(String error) {
+                                                        Log.e(TAG, "Splits sync failed: " + error);
+                                                    }
+                                                });
+                                    });
                                 }
 
                                 @Override
@@ -112,7 +120,7 @@ public class LoginFragment extends Fragment {
                                 }
                             });
 
-                    // 4. Sync completed challenge items
+                    // 5. Sync completed challenge items
                     SyncActivities.fetchCompletedChallengeItems(appContext, userId,
                             new SyncActivities.ChallengeItemSyncCallback() {
                                 @Override
@@ -131,7 +139,7 @@ public class LoginFragment extends Fragment {
                     Log.e(TAG, "Could not get userId for sync: " + e.getMessage());
                 }
 
-                // 5. Navigate to MainActivity
+                // 6. Navigate to MainActivity
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
                         Intent intent = new Intent(appContext, MainActivity.class);

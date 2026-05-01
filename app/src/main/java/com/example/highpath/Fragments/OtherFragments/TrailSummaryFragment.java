@@ -1,5 +1,7 @@
 package com.example.highpath.Fragments.OtherFragments;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -41,14 +43,13 @@ public class TrailSummaryFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_trail_summary, container, false);
 
-
-        trailMap        = view.findViewById(R.id.trailMapImage);
-        txtName         = view.findViewById(R.id.trailName);
-        txtRegion       = view.findViewById(R.id.trailRegion);
-        txtDifficulty   = view.findViewById(R.id.trailDifficulty);
-        txtDistance     = view.findViewById(R.id.trailDistance);
-        txtAscent       = view.findViewById(R.id.trailAscent);
-        txtDescription  = view.findViewById(R.id.trailDescription);
+        trailMap       = view.findViewById(R.id.trailMapImage);
+        txtName        = view.findViewById(R.id.trailName);
+        txtRegion      = view.findViewById(R.id.trailRegion);
+        txtDifficulty  = view.findViewById(R.id.trailDifficulty);
+        txtDistance    = view.findViewById(R.id.trailDistance);
+        txtAscent      = view.findViewById(R.id.trailAscent);
+        txtDescription = view.findViewById(R.id.trailDescription);
 
         trailMap.setOnClickListener(v -> {
             if (trailId != null) {
@@ -90,6 +91,15 @@ public class TrailSummaryFragment extends Fragment {
                     txtDistance.setText(trail.getDistanceKm() + " km");
                     txtAscent.setText(trail.getAscentM() + " m");
                     setDifficultyChip(trail.getDifficulty());
+
+                    // Load preview image
+                    byte[] previewBytes = trail.getThumbnail();
+                    if (previewBytes != null && previewBytes.length > 0) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(previewBytes, 0, previewBytes.length);
+                        if (bitmap != null) {
+                            trailMap.setImageBitmap(bitmap);
+                        }
+                    }
 
                     String description = trail.getDescription();
                     if (description != null && !description.isEmpty()) {

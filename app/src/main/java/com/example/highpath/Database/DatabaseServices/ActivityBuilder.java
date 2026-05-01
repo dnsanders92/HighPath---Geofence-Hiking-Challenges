@@ -172,7 +172,7 @@ public class ActivityBuilder {
                 if (metrics.gpx != null && metrics.gpx.trailMapImage != null) {
                     UploadTrailMap.upload(
                             context,
-                            23,
+                            (int) user.getUserId(),
                             activity.getActivityId(),
                             metrics.gpx.trailMapImage,
                             new UploadTrailMap.UploadCallback() {

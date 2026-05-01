@@ -48,11 +48,12 @@ public class TrailsAdapter extends BaseAdapter {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.trail_list_item, parent, false);
             holder = new ViewHolder();
-            holder.trailImage = convertView.findViewById(R.id.trailImage);
-            holder.trailName = convertView.findViewById(R.id.trailName);
-            holder.trailRegion = convertView.findViewById(R.id.trailRegion);
-            holder.trailDistance = convertView.findViewById(R.id.trailDistance);
-            holder.trailAscent = convertView.findViewById(R.id.trailAscent);
+            holder.trailImage      = convertView.findViewById(R.id.trailImage);
+            holder.trailOverlayIcon = convertView.findViewById(R.id.trailOverlayIcon);
+            holder.trailName       = convertView.findViewById(R.id.trailName);
+            holder.trailRegion     = convertView.findViewById(R.id.trailRegion);
+            holder.trailDistance   = convertView.findViewById(R.id.trailDistance);
+            holder.trailAscent     = convertView.findViewById(R.id.trailAscent);
             holder.trailDifficulty = convertView.findViewById(R.id.trailDifficulty);
             convertView.setTag(holder);
         } else {
@@ -61,12 +62,23 @@ public class TrailsAdapter extends BaseAdapter {
 
         TrailEntity trail = trails.get(position);
         if (trail != null) {
-            byte[] thumbnailBytes = trail.getPreviewImage();
-            if (thumbnailBytes != null && thumbnailBytes.length > 0) {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(thumbnailBytes, 0, thumbnailBytes.length);
+
+            // Main preview image
+            byte[] previewBytes = trail.getPreviewImage();
+            if (previewBytes != null && previewBytes.length > 0) {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(previewBytes, 0, previewBytes.length);
                 holder.trailImage.setImageBitmap(bitmap);
             } else {
                 holder.trailImage.setImageResource(R.drawable.errigal);
+            }
+
+            // Small overlay thumbnail
+            byte[] thumbnailBytes = trail.getThumbnail();
+            if (thumbnailBytes != null && thumbnailBytes.length > 0) {
+                Bitmap thumbBitmap = BitmapFactory.decodeByteArray(thumbnailBytes, 0, thumbnailBytes.length);
+                holder.trailOverlayIcon.setImageBitmap(thumbBitmap);
+            } else {
+                holder.trailOverlayIcon.setImageResource(R.drawable.trail_placeholder);
             }
 
             holder.trailName.setText(trail.getName());
@@ -79,7 +91,7 @@ public class TrailsAdapter extends BaseAdapter {
     }
 
     static class ViewHolder {
-        ImageView trailImage;
+        ImageView trailImage, trailOverlayIcon;
         TextView trailName, trailRegion, trailDistance, trailAscent, trailDifficulty;
     }
 }

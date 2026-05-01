@@ -23,7 +23,11 @@ public class CreateLocalUser {
 
     private static final String TAG = "SyncDebug";
 
-    public static void syncActivitiesToLocal(final Context context, JSONArray activitiesArray) {
+    public interface SyncCallback {
+        void onComplete();
+    }
+
+    public static void syncActivitiesToLocal(final Context context, JSONArray activitiesArray, SyncCallback callback) {
         new Thread(() -> {
             try {
                 LocalDatabase db = LocalDatabase.getInstance(context);
@@ -50,6 +54,7 @@ public class CreateLocalUser {
                     db.activityDao().insert(activity);
                 }
                 Log.d(TAG, "Activity Sync Complete.");
+                if (callback != null) callback.onComplete();
             } catch (Exception e) {
                 Log.e(TAG, "Error saving activities to Room: " + e.getMessage());
                 e.printStackTrace();
@@ -100,13 +105,9 @@ public class CreateLocalUser {
 
                     Log.d(TAG, "Processing item - summitId: " + summitId + " challengeId: " + challengeId);
 
-                    // Mark the challenge_item completed locally
                     db.challengeItemDao().markSummitCompleted(summitId);
-
-                    // Mark the summit itself completed
                     db.summitsDao().markSummitCompleted(summitId);
 
-                    // Increment completed summits count by 1 on the challenge
                     ChallengesEntity challenge = db.challengesDao().getChallengeById(challengeId);
                     Log.d(TAG, "Challenge lookup for id " + challengeId + ": " + (challenge == null ? "NULL" : challenge.getChallengeName() + " current count: " + challenge.getCompletedSummits()));
 
