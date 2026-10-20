@@ -10,104 +10,88 @@ public class ActivityEntity {
 
     @PrimaryKey
     @NonNull
-    @ColumnInfo(name = "activity_id") private String activityId;
-    @ColumnInfo(name = "activity_name") private String activityName;
-    @ColumnInfo(name = "distance") private double distance;
-    @ColumnInfo(name = "elevation_gain") private double elevationGain;
-    @ColumnInfo(name = "elevation_loss") private double elevationLoss;
-    @ColumnInfo(name = "average_pace") private double averagePace;
-    @ColumnInfo(name = "moving_time") private long movingTime;
-    @ColumnInfo(name = "actual_time") private long actualTime;
-    @ColumnInfo(name = "calories") private double calories;
-    @ColumnInfo(name = "gpx_file_path") private String gpxFilePath;
-    @ColumnInfo(name = "timestamp") private long timestamp;
+    @ColumnInfo(name = "activity_id")
+    private String activityId;
+
+    @ColumnInfo(name = "user_id")
+    private int userId;
+
+    @ColumnInfo(name = "activity_name")
+    private String activityName;
+
+    @ColumnInfo(name = "distance")
+    private Double distance;
+
+    @ColumnInfo(name = "elevation_gain")
+    private Double elevationGain;
+
+    @ColumnInfo(name = "elevation_loss")
+    private Double elevationLoss;
+
+    @ColumnInfo(name = "average_pace")
+    private Double averagePace;
+
+    @ColumnInfo(name = "moving_time")
+    private Long movingTime;
+
+    @ColumnInfo(name = "actual_time")
+    private Long actualTime;
+
+    @ColumnInfo(name = "calories")
+    private Double calories;
+
+    @ColumnInfo(name = "gpx_file_path")
+    private String gpxFilePath;
+
+    @ColumnInfo(name = "timestamp")
+    private Long timestamp;
+
+    @ColumnInfo(name = "is_challenge")
+    private Boolean isChallenge;
+
+    @ColumnInfo(name = "trail_map_image", typeAffinity = ColumnInfo.BLOB)
+    private byte[] trailMapImage;
 
     @NonNull
-    public String getActivityId() {
-        return activityId;
-    }
+    public String getActivityId() { return activityId; }
+    public void setActivityId(@NonNull String activityId) { this.activityId = activityId; }
 
-    public void setActivityId(@NonNull String activityId) {
-        this.activityId = activityId;
-    }
+    public int getUserId() { return userId; }
+    public void setUserId(int userId) { this.userId = userId; }
 
-    public String getActivityName() {
-        return activityName;
-    }
+    public String getActivityName() { return activityName; }
+    public void setActivityName(String activityName) { this.activityName = activityName; }
 
-    public void setActivityName(String activityName) {
-        this.activityName = activityName;
-    }
+    public Double getDistance() { return distance; }
+    public void setDistance(Double distance) { this.distance = distance; }
 
-    public double getDistance() {
-        return distance;
-    }
+    public Double getElevationGain() { return elevationGain; }
+    public void setElevationGain(Double elevationGain) { this.elevationGain = elevationGain; }
 
-    public void setDistance(double distance) {
-        this.distance = distance;
-    }
+    public Double getElevationLoss() { return elevationLoss; }
+    public void setElevationLoss(Double elevationLoss) { this.elevationLoss = elevationLoss; }
 
-    public double getElevationGain() {
-        return elevationGain;
-    }
+    public Double getAveragePace() { return averagePace; }
+    public void setAveragePace(Double averagePace) { this.averagePace = averagePace; }
 
-    public void setElevationGain(double elevationGain) {
-        this.elevationGain = elevationGain;
-    }
+    public Long getMovingTime() { return movingTime; }
+    public void setMovingTime(Long movingTime) { this.movingTime = movingTime; }
 
-    public double getElevationLoss() {
-        return elevationLoss;
-    }
+    public Long getActualTime() { return actualTime; }
+    public void setActualTime(Long actualTime) { this.actualTime = actualTime; }
 
-    public void setElevationLoss(double elevationLoss) {
-        this.elevationLoss = elevationLoss;
-    }
+    public Double getCalories() { return calories; }
+    public void setCalories(Double calories) { this.calories = calories; }
 
-    public double getAveragePace() {
-        return averagePace;
-    }
+    public String getGpxFilePath() { return gpxFilePath; }
+    public void setGpxFilePath(String gpxFilePath) { this.gpxFilePath = gpxFilePath; }
 
-    public void setAveragePace(double averagePace) {
-        this.averagePace = averagePace;
-    }
+    public Long getTimestamp() { return timestamp; }
+    public void setTimestamp(Long timestamp) { this.timestamp = timestamp; }
 
-    public long getMovingTime() {
-        return movingTime;
-    }
+    public Boolean getIsChallenge() { return isChallenge; }
+    public void setIsChallenge(Boolean isChallenge) { this.isChallenge = isChallenge; }
 
-    public void setMovingTime(long movingTime) {
-        this.movingTime = movingTime;
-    }
-
-    public long getActualTime() {
-        return actualTime;
-    }
-
-    public void setActualTime(long actualTime) {
-        this.actualTime = actualTime;
-    }
-
-    public double getCalories() {
-        return calories;
-    }
-
-    public void setCalories(double calories) {
-        this.calories = calories;
-    }
-
-    public String getGpxFilePath() {
-        return gpxFilePath;
-    }
-
-    public void setGpxFilePath(String gpxFilePath) {
-        this.gpxFilePath = gpxFilePath;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
+    public byte[] getTrailMapImage() { return trailMapImage; }
+    public void setTrailMapImage(byte[] trailMapImage) { this.trailMapImage = trailMapImage; }
 }

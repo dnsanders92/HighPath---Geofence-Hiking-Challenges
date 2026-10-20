@@ -1,36 +1,31 @@
 package com.example.highpath.Calculations;
 
+import android.annotation.SuppressLint;
+
 public class CalculatePace {
 
-    private int minutes(int totalSeconds) {
-        return totalSeconds / 60;
+    // calculate raw pace (min per km)
+    public static double pace(long movingDurationSeconds, double totalDistanceKM) {
+        if (totalDistanceKM <= 0.0 || movingDurationSeconds <= 0) return 0.0;
+
+        double totalMinutes = movingDurationSeconds / 60.0;
+        return totalMinutes / totalDistanceKM;
     }
 
-    private int remainingSeconds(int totalSeconds) {
-        return totalSeconds % 60;
-    }
+    // format pace as mm:ss
+    @SuppressLint("DefaultLocale")
+    public static String formatPaceToString(double rawPace) {
+        if (rawPace <= 0) return "00:00";
 
-    private double kilometres(double metres) {
-        return metres / 1000;
-    }
+        int minutes = (int) Math.floor(rawPace);
+        int seconds = (int) Math.round((rawPace - minutes) * 60.0);
 
-    // Returns pace as "mm:ss min/km"
-    public String pace(int totalSeconds, double metres) {
-
-        if (metres <= 0) {
-            return "0:00";
+        // handle rounding overflow
+        if (seconds == 60) {
+            minutes += 1;
+            seconds = 0;
         }
 
-        double km = kilometres(metres);
-
-        // seconds per kilometre
-        double secondsPerKm = totalSeconds / km;
-
-        int paceMinutes = minutes((int) secondsPerKm);
-        int paceSeconds = remainingSeconds((int) secondsPerKm);
-
-        // format seconds to always be 2 digits
-        return String.format("%d:%02d min/km", paceMinutes, paceSeconds);
+        return String.format("%02d:%02d", minutes, seconds);
     }
 }
-

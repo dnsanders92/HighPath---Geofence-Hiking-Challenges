@@ -4,152 +4,86 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import java.util.Date;
-
 @Entity(tableName = "user")
-    public class UserEntity {
+public class UserEntity {
 
-        @PrimaryKey(autoGenerate = true)
-        @ColumnInfo(name = "user_id")
-        public int userId;
+    @PrimaryKey()
+    @ColumnInfo(name = "user_id")
+    public Integer userId; // Integer allows NULL, int does not
 
-        @ColumnInfo(name = "first_name")
-        public String firstName;
+    @ColumnInfo(name = "first_name")
+    public String firstName;
 
-        @ColumnInfo(name = "surname")
-        public String surname;
+    @ColumnInfo(name = "surname")
+    public String surname;
 
-        @ColumnInfo(name = "month_of_birth")
-        public String monthOfBirth;
+    @ColumnInfo(name = "month_of_birth")
+    public String monthOfBirth;
 
-        @ColumnInfo(name = "year_of_birth")
-        public int yearOfBirth;
+    @ColumnInfo(name = "year_of_birth")
+    public Integer yearOfBirth;
 
-        @ColumnInfo(name = "total_distance_km")
-        public int totalDistanceKm;
+    @ColumnInfo(name = "total_distance_km")
+    public Integer totalDistanceKm;
 
-        @ColumnInfo(name = "total_elevation_m")
-        public int totalElevationM;
+    @ColumnInfo(name = "total_elevation_m")
+    public Integer totalElevationM;
 
-        @ColumnInfo(name = "completed_activities")
-        public int completedActivities;
+    @ColumnInfo(name = "completed_activities")
+    public Integer completedActivities;
 
-        @ColumnInfo(name = "completed_challenges")
-        public int completedChallenges;
+    @ColumnInfo(name = "completed_challenges")
+    public Integer completedChallenges;
 
-        @ColumnInfo(name = "total_time_outside_seconds")
-        public int totalTimeOutsideSeconds;
+    @ColumnInfo(name = "total_time_outside_seconds")
+    public Long totalTimeOutsideSeconds;
 
-        @ColumnInfo(name = "total_moving_time_seconds")
-        public int totalMovingTimeSeconds;
+    @ColumnInfo(name = "total_moving_time_seconds")
+    public Long totalMovingTimeSeconds;
 
-        @ColumnInfo(name = "profile_image")
-        public byte[] profileImage;
+    @ColumnInfo(name = "profile_image")
+    public byte[] profileImage;
 
-        @ColumnInfo(name = "banner_image")
-        public byte[] bannerImage;
+    @ColumnInfo(name = "banner_image")
+    public byte[] bannerImage;
 
-    public int getUserId() {
-        return userId;
-    }
+    // Standard Getters and Setters
+    public Integer getUserId() { return userId; }
+    public void setUserId(Integer userId) { this.userId = userId; }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
 
-    public String getFirstName() {
-        return firstName;
-    }
+    public String getSurname() { return surname; }
+    public void setSurname(String surname) { this.surname = surname; }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
+    public String getMonthOfBirth() { return monthOfBirth; }
+    public void setMonthOfBirth(String monthOfBirth) { this.monthOfBirth = monthOfBirth; }
 
-    public String getSurname() {
-        return surname;
-    }
+    public Integer getYearOfBirth() { return yearOfBirth; }
+    public void setYearOfBirth(Integer yearOfBirth) { this.yearOfBirth = yearOfBirth; }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
+    public Integer getTotalDistanceKm() { return totalDistanceKm; }
+    public void setTotalDistanceKm(Integer totalDistanceKm) { this.totalDistanceKm = totalDistanceKm; }
 
-    public String getMonthOfBirth() {
-        return monthOfBirth;
-    }
+    public Integer getTotalElevationM() { return totalElevationM; }
+    public void setTotalElevationM(Integer totalElevationM) { this.totalElevationM = totalElevationM; }
 
-    public void setMonthOfBirth(String monthOfBirth) {
-        this.monthOfBirth = monthOfBirth;
-    }
+    public Integer getCompletedActivities() { return completedActivities; }
+    public void setCompletedActivities(Integer completedActivities) { this.completedActivities = completedActivities; }
 
-    public int getYearOfBirth() {
-        return yearOfBirth;
-    }
+    public Integer getCompletedChallenges() { return completedChallenges; }
+    public void setCompletedChallenges(Integer completedChallenges) { this.completedChallenges = completedChallenges; }
 
-    public void setYearOfBirth(int yearOfBirth) {
-        this.yearOfBirth = yearOfBirth;
-    }
+    public Long getTotalTimeOutsideSeconds() { return totalTimeOutsideSeconds; }
+    public void setTotalTimeOutsideSeconds(Long totalTimeOutsideSeconds) { this.totalTimeOutsideSeconds = totalTimeOutsideSeconds; }
 
-    public int getTotalDistanceKm() {
-        return totalDistanceKm;
-    }
+    public Long getTotalMovingTimeSeconds() { return totalMovingTimeSeconds; }
+    public void setTotalMovingTimeSeconds(Long totalMovingTimeSeconds) { this.totalMovingTimeSeconds = totalMovingTimeSeconds; }
 
-    public void setTotalDistanceKm(int totalDistanceKm) {
-        this.totalDistanceKm = totalDistanceKm;
-    }
+    public byte[] getProfileImage() { return profileImage; }
+    public void setProfileImage(byte[] profileImage) { this.profileImage = profileImage; }
 
-    public int getTotalElevationM() {
-        return totalElevationM;
-    }
-
-    public void setTotalElevationM(int totalElevationM) {
-        this.totalElevationM = totalElevationM;
-    }
-
-    public int getCompletedActivities() {
-        return completedActivities;
-    }
-
-    public void setCompletedActivities(int completedActivities) {
-        this.completedActivities = completedActivities;
-    }
-
-    public int getCompletedChallenges() {
-        return completedChallenges;
-    }
-
-    public void setCompletedChallenges(int completedChallenges) {
-        this.completedChallenges = completedChallenges;
-    }
-
-    public int getTotalTimeOutsideSeconds() {
-        return totalTimeOutsideSeconds;
-    }
-
-    public void setTotalTimeOutsideSeconds(int totalTimeOutsideSeconds) {
-        this.totalTimeOutsideSeconds = totalTimeOutsideSeconds;
-    }
-
-    public int getTotalMovingTimeSeconds() {
-        return totalMovingTimeSeconds;
-    }
-
-    public void setTotalMovingTimeSeconds(int totalMovingTimeSeconds) {
-        this.totalMovingTimeSeconds = totalMovingTimeSeconds;
-    }
-
-    public byte[] getProfileImage() {
-        return profileImage;
-    }
-
-    public void setProfileImage(byte[] profileImage) {
-        this.profileImage = profileImage;
-    }
-
-    public byte[] getBannerImage() {
-        return bannerImage;
-    }
-
-    public void setBannerImage(byte[] bannerImage) {
-        this.bannerImage = bannerImage;
-    }
+    public byte[] getBannerImage() { return bannerImage; }
+    public void setBannerImage(byte[] bannerImage) { this.bannerImage = bannerImage; }
 }

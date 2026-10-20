@@ -1,66 +1,191 @@
 package com.example.highpath.Fragments.NavigationFragments;
 
+import android.content.Context;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.Spinner;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import com.example.highpath.Adapters.ActivityAdapter;
+import com.example.highpath.Database.Entities.ActivityEntity;
+import com.example.highpath.Database.LocalDatabase;
+import com.example.highpath.Fragments.OtherFragments.SummaryFragment;
 import com.example.highpath.R;
+import com.example.highpath.Utilities.DynamicSearchHelper;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ActivitiesFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 public class ActivitiesFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private ListView activitiesList;
+    private EditText searchBox;
+    private Spinner sortSpinner;
+    private ActivityAdapter adapter;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private List<ActivityEntity> allActivities = new ArrayList<>();
+    private List<ActivityEntity> currentFilteredList = new ArrayList<>();
+    private final DynamicSearchHelper<ActivityEntity> searchHelper = new DynamicSearchHelper<>();
 
-    public ActivitiesFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ActivitiesFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ActivitiesFragment newInstance(String param1, String param2) {
-        ActivitiesFragment fragment = new ActivitiesFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    public ActivitiesFragment() {}
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_activities, container, false);
+
+        // connect ui
+        activitiesList = view.findViewById(R.id.activities_list);
+        searchBox = view.findViewById(R.id.searchActivities);
+        sortSpinner = view.findViewById(R.id.sortSpinner);
+
+        setupSearch();
+        setupSortSpinner();
+
+        return view;
+    }
+
+    private void setupSearch() {
+        // search listener
+        searchBox.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // filter list
+                currentFilteredList = searchHelper.filter(allActivities, s.toString(), ActivityEntity::getActivityName);
+                applySortAndRefresh();
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void setupSortSpinner() {
+        // sort options
+        String[] options = {"Newest First", "Oldest First", "Longest Distance", "Highest Elevation"};
+
+        ArrayAdapter<String> spinnerAdapter =
+                new ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item, options) {
+                    @NonNull
+                    @Override
+                    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                        // hide default text (custom icon used)
+                        return new View(getContext());
+                    }
+                };
+
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sortSpinner.setAdapter(spinnerAdapter);
+
+        // sort listener
+        sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                applySortAndRefresh();
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
+    private void applySortAndRefresh() {
+        if (currentFilteredList == null || currentFilteredList.isEmpty()) return;
+
+        int position = sortSpinner.getSelectedItemPosition();
+
+        // sort logic
+        switch (position) {
+            case 0: // newest
+                Collections.sort(currentFilteredList,
+                        (a1, a2) -> Long.compare(a2.getTimestamp(), a1.getTimestamp()));
+                break;
+
+            case 1: // oldest
+                Collections.sort(currentFilteredList,
+                        Comparator.comparingLong(ActivityEntity::getTimestamp));
+                break;
+
+            case 2: // distance
+                Collections.sort(currentFilteredList,
+                        (a1, a2) -> Double.compare(a2.getDistance(), a1.getDistance()));
+                break;
+
+            case 3: // elevation
+                Collections.sort(currentFilteredList,
+                        (a1, a2) -> Double.compare(a2.getElevationGain(), a1.getElevationGain()));
+                break;
+        }
+
+        // update adapter
+        if (adapter != null) {
+            adapter.updateList(new ArrayList<>(currentFilteredList));
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_activities, container, false);
+    public void onResume() {
+        super.onResume();
+        loadActivities();
+    }
+
+    public void loadActivities() {
+        // load from db
+        new Thread(() -> {
+            Context context = getContext();
+            if (context == null) return;
+
+            LocalDatabase db = LocalDatabase.getInstance(context);
+            allActivities = db.activityDao().getAllActivities();
+            currentFilteredList = new ArrayList<>(allActivities);
+
+            // update ui
+            if (getActivity() != null && isAdded()) {
+                getActivity().runOnUiThread(() -> {
+                    if (getContext() != null && isAdded()) {
+
+                        // set adapter
+                        adapter = new ActivityAdapter(getContext(), currentFilteredList);
+                        activitiesList.setAdapter(adapter);
+
+                        // initial sort
+                        applySortAndRefresh();
+
+                        // item click
+                        activitiesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view1, int position, long id) {
+                                ActivityEntity clicked = (ActivityEntity) adapter.getItem(position);
+                                if (clicked != null) {
+                                    openSummary(clicked.getActivityId());
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private void openSummary(String activityId) {
+        // open summary fragment
+        SummaryFragment summaryFragment = new SummaryFragment();
+        Bundle args = new Bundle();
+        args.putString("activityId", activityId);
+        summaryFragment.setArguments(args);
+
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.container, summaryFragment)
+                .addToBackStack(null)
+                .commit();
     }
 }

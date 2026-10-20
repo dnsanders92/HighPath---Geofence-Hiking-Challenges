@@ -1,14 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Fragments.NavigationFragments.ChallengesFragment">
+    android:orientation="vertical"
+    android:background="#F8F8F8">
 
-    <!-- TODO: Update blank fragment layout -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="65dp"
+        android:background="#E6E6E6"
+        android:paddingHorizontal="12dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="52dp">
+
+            <EditText
+                android:id="@+id/searchChallenges"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/rounded_corners_container"
+                android:hint="Search challenges..."
+                android:textSize="13sp"
+                android:textColorHint="#B0B0B0"
+                android:textColor="#1A1A1A"
+                android:paddingStart="12dp"
+                android:paddingEnd="40dp"
+                android:inputType="text"
+                android:imeOptions="actionSearch"
+                android:singleLine="true" />
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/search_icon"
+                android:alpha="0.5" />
+        </RelativeLayout>
+
+        <ImageButton
+            android:id="@+id/btnAddChallenge"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/add_icon"
+            android:padding="12dp"
+            android:scaleType="centerInside"
+            android:background="@drawable/rounded_corners_container"
+            android:contentDescription="Challenge Options" />
+
+    </RelativeLayout>
+
     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Active Challenges"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#222222"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginBottom="8dp" />
+
+    <ListView
+        android:id="@+id/challenges_list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Challenges Fragment" />
+        android:divider="@android:color/transparent"
+        android:dividerHeight="12dp"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="4dp"
+        android:clipToPadding="false"
+        android:scrollbars="none" />
 
-</FrameLayout>
+</LinearLayout>

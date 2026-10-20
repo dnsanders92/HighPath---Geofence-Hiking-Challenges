@@ -1,14 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Fragments.NavigationFragments.ActivitiesFragment">
+    android:orientation="vertical"
+    android:background="#F5F5F5">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="65dp"
+        android:background="#E6E6E6"
+        android:paddingHorizontal="12dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="52dp">
+
+            <EditText
+                android:id="@+id/searchActivities"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/rounded_corners_container"
+                android:hint="Search activities..."
+                android:textSize="13sp"
+                android:textColorHint="#B0B0B0"
+                android:textColor="#1A1A1A"
+                android:paddingStart="12dp"
+                android:paddingEnd="40dp"
+                android:inputType="text"
+                android:imeOptions="actionSearch"
+                android:singleLine="true" />
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/search_icon"
+                android:alpha="0.5" />
+        </RelativeLayout>
+
+        <FrameLayout
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/sort"
+                android:padding="8dp"
+                android:background="@drawable/rounded_corners_container" />
+
+            <Spinner
+                android:id="@+id/sortSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:spinnerMode="dropdown" />
+        </FrameLayout>
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/activities_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Activities fragment" />
-
-</FrameLayout>
+        android:divider="@android:color/transparent"
+        android:dividerHeight="12dp"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="12dp"
+        android:clipToPadding="false"
+        android:scrollbars="none" />
+</LinearLayout>

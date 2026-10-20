@@ -10,115 +10,148 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-import com.example.highpath.Calculations.CalculateDistance;
-import com.example.highpath.Calculations.CalculateElevation;
-import com.example.highpath.R;
+import com.example.highpath.Database.DatabaseServices.ActivityBuilder;
+import com.example.highpath.Runnables.GpxRunnable;
+import com.example.highpath.Runnables.PaceRunnable;
+import com.example.highpath.Runnables.TimeRunnable;
+import com.example.highpath.Runnables.MetricsRunnable;
+import com.example.highpath.Utilities.GPX.GPXParser;
+import com.example.highpath.Utilities.GPX.GpxBuilder;
+import com.example.highpath.Utilities.GPX.LiveTrackManager;
+
+import java.io.IOException;
 
 public class RecordingService extends Service {
 
-    public static final String ACTION_TIME_TICK = "com.example.highpath.TIME_TICK";
-    public static final String ACTION_METRICS_UPDATE = "com.example.highpath.RECORDING_METRICS_UPDATE";
-    private static final String CHANNEL_ID = "RecordingChannel";
+    private static final String TAG = "RecordingService";
+    private static final String CHANNEL_ID = "record_channel";
+
+    // broadcast Action
+    public static final String ACTION_RECORDING_STATUS = "com.example.highpath.RECORDING_STATUS";
+
+    // static flag for instant checking
+    public static boolean isRecording = false;
+
+    private static final String EXTRA_FILE_PATH = "extra_file_path";
+    private static final String EXTRA_FILE_NAME = "extra_file_name";
+
+    private String filePath, fileName, fullPath;
+
+    private GpxBuilder gpxBuilder;
+    private GPXParser gpxParser;
 
     private LocationService locationService;
-    private int time = 0;
-    private double totalDistance = 0, totalElevation = 0;
-    private double prevLat = 0.0, prevLon = 0.0, prevEle = 0.0;
-    private boolean hasPreviousPoint = false;
-
+    private GpxRunnable gpxRunnable;
+    private TimeRunnable timeRunnable;
+    private MetricsRunnable metricsRunnable;
+    private PaceRunnable paceRunnable;
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private boolean isRecordingActive = false;
 
-    private final Runnable countSeconds = new Runnable() {
-        @Override
-        public void run() {
-            if (isRecordingActive) {
-                time += 1;
-                Intent intent = new Intent(ACTION_TIME_TICK);
-                intent.putExtra("time", time);
-                sendBroadcast(intent);
-            }
-            handler.postDelayed(this, 1000);
+    public static void start(Context context, String filePath, String fileName) {
+        Intent intent = new Intent(context, RecordingService.class);
+        intent.putExtra(EXTRA_FILE_PATH, filePath);
+        intent.putExtra(EXTRA_FILE_NAME, fileName);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent);
+        } else {
+            context.startService(intent);
         }
-    };
+    }
 
-    private final Runnable metricRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (isRecordingActive && locationService != null) {
-                double lat = locationService.getLatitude();
-                double lon = locationService.getLongitude();
-                double ele = locationService.getElevation();
-
-                if (lat != 0.0 && lon != 0.0) {
-                    if (hasPreviousPoint) {
-                        double distance = CalculateDistance.equirectangular(prevLat, prevLon, lat, lon);
-                        if (distance > 1.0) {
-                            totalDistance += distance;
-                            totalElevation += CalculateElevation.calcGain(ele, prevEle);
-                            prevLat = lat; prevLon = lon; prevEle = ele;
-                        }
-                    } else {
-                        prevLat = lat; prevLon = lon; prevEle = ele;
-                        hasPreviousPoint = true;
-                    }
-
-                    Intent intent = new Intent(ACTION_METRICS_UPDATE);
-                    intent.putExtra("distance", totalDistance);
-                    intent.putExtra("elevation", totalElevation);
-                    intent.putExtra("time", time); // Added for Pace Receiver
-                    intent.setPackage(getPackageName());
-                    sendBroadcast(intent);
-                }
-            }
-            handler.postDelayed(this, 2000);
-        }
-    };
+    public static void stop(Context context) {
+        Intent intent = new Intent(context, RecordingService.class);
+        context.stopService(intent);
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
-        locationService = new LocationService(this);
-        locationService.startLocationUpdates();
-        handler.post(countSeconds);
-        handler.post(metricRunnable);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null) {
+            filePath = intent.getStringExtra(EXTRA_FILE_PATH);
+            fileName = intent.getStringExtra(EXTRA_FILE_NAME);
+            fullPath = filePath + "/" + fileName;
+
+            if (filePath != null && fileName != null) {
+                gpxBuilder = new GpxBuilder(filePath, fileName);
+
+                try {
+                    gpxBuilder.gpxHeader();
+
+                    locationService = new LocationService(this);
+                    locationService.startLocationUpdates();
+
+                    gpxRunnable = new GpxRunnable(handler, locationService, gpxBuilder);
+                    timeRunnable = new TimeRunnable(this, handler);
+                    metricsRunnable = new MetricsRunnable(this, handler, locationService);
+                    paceRunnable = new PaceRunnable(this, handler, timeRunnable, metricsRunnable);
+
+                    handler.post(gpxRunnable);
+                    handler.post(timeRunnable);
+                    handler.post(metricsRunnable);
+                    handler.post(paceRunnable);
+
+                    // Update status and broadcast
+                    isRecording = true;
+                    sendStatusBroadcast(true);
+
+                } catch (Exception e) {
+                    Log.e(TAG, "Error initializing Service", e);
+                }
+            }
+        }
+
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Hike Recording")
-                .setContentText("Actively tracking your progress…")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("Recording Route")
+                .setContentText("Tracking metrics...")
+                .setSmallIcon(android.R.drawable.ic_menu_mylocation)
                 .setOngoing(true)
                 .build();
 
         startForeground(1, notification);
+        return START_NOT_STICKY;
+    }
 
-        if (intent != null && intent.getAction() != null) {
-            String action = intent.getAction();
-            if (action.equals("START_OR_RESUME")) {
-                isRecordingActive = true;
-            } else if (action.equals("PAUSE")) {
-                isRecordingActive = false;
-            }
-        } else {
-            isRecordingActive = true;
-        }
-
-        return START_STICKY;
+    private void sendStatusBroadcast(boolean status) {
+        Intent intent = new Intent(ACTION_RECORDING_STATUS);
+        intent.putExtra("isRecording", status);
+        intent.setPackage(getPackageName());
+        sendBroadcast(intent);
     }
 
     @Override
     public void onDestroy() {
-        handler.removeCallbacks(countSeconds);
-        handler.removeCallbacks(metricRunnable);
+        isRecording = false;
+        sendStatusBroadcast(false);
+
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
+
         if (locationService != null) locationService.stopLocationUpdates();
+
+        if (gpxBuilder != null) {
+            try {
+
+                gpxBuilder.gpxFooter();
+
+                new ActivityBuilder().insertActivity(getApplicationContext(), fullPath);
+                LiveTrackManager.getInstance().clear();
+
+            } catch (IOException e) {
+                Log.e(TAG, "Error closing GPX", e);
+            }
+        }
         super.onDestroy();
     }
 
@@ -130,27 +163,8 @@ public class RecordingService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID, "Recording Service", NotificationManager.IMPORTANCE_LOW);
-            getSystemService(NotificationManager.class).createNotificationChannel(channel);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) manager.createNotificationChannel(channel);
         }
-    }
-
-    public static void startOrResume(Context context) {
-        Intent intent = new Intent(context, RecordingService.class);
-        intent.setAction("START_OR_RESUME");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent);
-        } else {
-            context.startService(intent);
-        }
-    }
-
-    public static void pause(Context context) {
-        Intent intent = new Intent(context, RecordingService.class);
-        intent.setAction("PAUSE");
-        context.startService(intent);
-    }
-
-    public static void stop(Context context) {
-        context.stopService(new Intent(context, RecordingService.class));
     }
 }
