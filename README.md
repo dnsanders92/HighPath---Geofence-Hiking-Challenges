@@ -1,6 +1,6 @@
 # HighPath: Geofence Hiking Challenges
 
-An Android app for discovering hiking trails, recording hikes, and completing summit challenges. Built in Java as my final year project for a BSc (Hons) in Computer Science at Ulster University (February – May 2026), and refactored in October 2026.
+An Android app for discovering hiking trails, recording hikes, and completing summit challenges. Built in Android Studio using Java as my final year project for a BSc (Hons) in Computer Science at Ulster University.
 
 ## 📸 App Screenshots
 
