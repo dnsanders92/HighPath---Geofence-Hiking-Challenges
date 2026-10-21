@@ -81,4 +81,4 @@ An Android app for discovering hiking trails, recording hikes, and completing su
 - **Elevation Correction:** Raw GPS elevation is inherently noisy. Finished activities have their elevation data corrected via the Open Topo API. Because the API limits requests to 100 locations at a time, elevation data is processed in batches before sending.
 - **Geofence Check:** Summit detection runs against the recorded track post-activity, comparing each GPX point against summits stored in the local database.
 - **Offline-First Architecture:** Data is written directly to the local Room database before syncing asynchronously to Supabase, guaranteeing fast offline access with cloud backup.
-- **Testing:** Comprehensive unit tests cover pace, distance, and elevation calculations, GPX parsing, and Room database CRUD operations for users, activities, and splits.
+- **Testing:** Comprehensive testing cover pace, distance, and elevation calculations, GPX parsing, and Room database CRUD operations for users, activities, and splits.
