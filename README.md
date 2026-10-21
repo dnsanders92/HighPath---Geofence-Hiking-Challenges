@@ -2,23 +2,48 @@
 
 An Android app for discovering hiking trails, recording hikes, and completing summit challenges. Built in Java as my final year project for a BSc (Hons) in Computer Science at Ulster University (February – May 2026), and refactored in October 2026.
 
-## 📸 Screenshots
+## 📸 App Screenshots
 
-<p align="center">
-  <img width="30%" src="https://github.com/user-attachments/assets/760c63ed-a337-494b-920a-bcfc04bdab91" />
-  <img width="30%" src="https://github.com/user-attachments/assets/b3dec186-bc9f-4214-87cc-54e73464380c" />
-  <img width="30%" src="https://github.com/user-attachments/assets/dd0582d5-94cd-4c40-9870-2a5e74101f40" />
-</p>
-<p align="center">
-  <img width="30%" src="https://github.com/user-attachments/assets/4fd61f06-b847-4268-bbc5-3ea18861c1ca" />
-  <img width="30%" src="https://github.com/user-attachments/assets/a4125bb2-b581-4901-9afc-42483c7c2f71" />
-  <img width="30%" src="https://github.com/user-attachments/assets/2a99903d-aa61-456c-890d-313628f61db6" />
-</p>
-<p align="center">
-  <img width="30%" src="https://github.com/user-attachments/assets/812034b6-f5e6-439c-8d4f-bf33951e34d7" />
-  <img width="30%" src="https://github.com/user-attachments/assets/9b82db20-4383-4e4a-b676-d3a510ff2de1" />
-  <img width="30%" src="https://github.com/user-attachments/assets/6efaec51-0fe6-4c39-b160-3ae8318cd941" />
-</p>
+<table>
+  <tr>
+    <td align="center">
+      <img width="220" alt="activities_tab" src="https://github.com/user-attachments/assets/df883277-dba9-4b81-aa32-3284dfcc3d22" /><br/>
+      <b>Activities Tab</b><br/>View completed hikes & metrics
+    </td>
+    <td align="center">
+      <img width="220" alt="trail_discovery_tab" src="https://github.com/user-attachments/assets/b56adef6-e798-4735-bded-191eec3369a7" /><br/>
+      <b>Trail Discovery</b><br/>Browse trails on Mapbox
+    </td>
+    <td align="center">
+      <img width="220" alt="trail_details_tab_with_5dayweather" src="https://github.com/user-attachments/assets/4d299be1-5db8-410f-bf64-c1d72695ccc2" /><br/>
+      <b>Trail Details & Weather</b><br/>5-day summit forecast
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img width="220" alt="recording_live_tab_3dmap" src="https://github.com/user-attachments/assets/8d6d7a53-e718-490c-88b9-6dc5a673b19b" /><br/>
+      <b>Live Recording (3D Map)</b><br/>Tracking hike in 3D
+    </td>
+    <td align="center">
+      <img width="220" alt="recording_live_2dmap" src="https://github.com/user-attachments/assets/c8bac9ba-d517-488e-a125-06e15af19d41" /><br/>
+      <b>Live Recording (2D Map)</b><br/>Tracking hike in 2D
+    </td>
+    <td align="center">
+      <img width="220" alt="mountain_details_tab" src="https://github.com/user-attachments/assets/51fa8b38-9953-4f42-a23c-69eb70db74d3" /><br/>
+      <b>Mountain Details</b><br/>Summit overview
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img width="220" alt="challenge_tab" src="https://github.com/user-attachments/assets/fb3b62ea-1762-4066-80f7-532353191345" /><br/>
+      <b>Challenges Tab</b><br/>Regional challenge progress
+    </td>
+    <td align="center" colspan="2">
+      <img width="220" alt="challenge_details_tab" src="https://github.com/user-attachments/assets/51a2f7bc-7921-4c31-aaea-e0548f57aea3" /><br/>
+      <b>Challenge Details</b><br/>Specific summit checklist
+    </td>
+  </tr>
+</table>
 
 > *Note: Elevation tracking and correction are fully functional in the live app; these screenshots were captured during testing using a location emulator.*
 
